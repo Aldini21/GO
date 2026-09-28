@@ -1,0 +1,18 @@
+
+
+
+invalida 2:
+
+package main
+
+func main() {
+    var 45nombre = "Aldo"
+
+    var precio = 100.25.50
+
+    var texto = "Otro mensaje sin cerrar
+
+    #
+    $
+}
+

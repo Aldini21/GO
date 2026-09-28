@@ -1,0 +1,20 @@
+package main;
+
+type Persona struct {
+    edad int
+    nombre string
+}
+
+var edad nombre int;
+
+const MAX int;
+
+var salario float64 = 5000;
+
+func main() {
+
+    var activo bool = true;
+
+    var contador int;
+
+}

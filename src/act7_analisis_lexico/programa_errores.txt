@@ -1,0 +1,55 @@
+package main;
+
+import "fmt";
+
+func main() {
+    var opcion int = 2;
+    var i int = 0;
+
+    switch opcion {
+        case 1:
+            fmt.Println("Opcion uno");
+
+        case:
+            fmt.Println("Case sin valor");
+
+        case 3:
+            fmt.Println("Opcion tres");
+
+        default:
+            fmt.Println("Otra opcion");
+    }
+
+    for i = 0; i < 5; {
+        fmt.Println("Valor:", i);
+    }
+
+    fmt.Println("El analizador continuo");
+}
+
+
+
+/*
+
+package main;
+
+import "fmt";
+
+func main() {
+    var edad int = 20;
+    var numero int = 10;
+
+    if edad >= {
+        fmt.Println("Condicion incorrecta");
+    }
+
+    fmt.Println("Primera recuperacion completada");
+
+    if numero == {
+        fmt.Println("Segunda condicion incorrecta");
+    }
+
+    fmt.Println("Fin del analisis");
+}
+
+*/

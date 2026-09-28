@@ -1,0 +1,15 @@
+
+
+
+package main
+
+func main() {
+    var precio = 150
+    var descuento = 20.5
+
+    precio = precio - descuento
+
+    precio @ descuento
+    precio ? 100
+    descuento $ 50
+}

@@ -1,0 +1,21 @@
+package main;
+
+import "fmt";
+
+var nombre, apellido string;
+var a, b, c int;
+var x, y float64 = 1.5, 2.5;
+var activo, disponible bool = true, false;
+
+func main() {
+
+    var numero1, numero2 int;
+    var p, q int = 10, 20;
+
+    fmt.Println("Nombre:", nombre);
+    fmt.Println("Valores:", a, b, c);
+
+    p = p + q;
+
+    fmt.Println("Resultado:", p);
+}

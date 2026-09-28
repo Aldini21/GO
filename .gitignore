@@ -1,0 +1,27 @@
+# Archivos compilados de Java
+*.class
+
+# Carpetas generadas por NetBeans
+build/
+dist/
+
+# Configuración privada/local de NetBeans
+nbproject/private/
+
+# Archivos temporales
+*~
+*.bak
+*.tmp
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos sensibles
+.env
+*.env
+
+# Errores de la JVM
+hs_err_pid*
+replay_pid*

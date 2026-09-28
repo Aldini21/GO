@@ -1,0 +1,899 @@
+
+/*
+NOMBRES
+xd
+*/
+
+package act5_analisis_lexico;
+
+import java_cup.runtime.*;
+
+parser code {:
+
+private boolean huboErrores = false;
+
+
+/* =====================================
+   MANEJO GENERAL DE ERRORES
+   ===================================== */
+
+@Override
+public void report_error(String message, Object info) {
+
+    huboErrores = true;
+
+    if (info instanceof Symbol) {
+
+        Symbol s = (Symbol) info;
+
+        if (s.left == -1 && s.right == -1) {
+
+            System.out.println(
+                "Error sintáctico al final del archivo: "
+                + "se esperaba otra estructura"
+            );
+
+        } else {
+
+            System.out.println(
+                "Error sintáctico en línea "
+                + s.left
+                + ", columna "
+                + s.right
+                + ": se encontró '"
+                + s.value
+                + "'"
+            );
+        }
+
+    } else {
+
+        System.out.println(
+            "Error sintáctico: " + message
+        );
+    }
+}
+
+
+@Override
+public void report_fatal_error(String message, Object info)
+        throws Exception {
+
+    huboErrores = true;
+
+    if (info instanceof Symbol) {
+
+        Symbol s = (Symbol) info;
+
+        if (s.left == -1 && s.right == -1) {
+
+            System.out.println(
+                "Error fatal al final del archivo."
+            );
+
+        } else {
+
+            System.out.println(
+                "Error fatal en línea "
+                + s.left
+                + ", columna "
+                + s.right
+                + ": se encontró '"
+                + s.value
+                + "'"
+            );
+        }
+
+    } else {
+
+        System.out.println(
+            "Error fatal: " + message
+        );
+    }
+
+    throw new Exception(
+        "Análisis detenido por error fatal."
+    );
+}
+
+:};
+
+
+/* =====================================
+   TERMINALES
+   ===================================== */
+
+/* PALABRAS RESERVADAS DE GO */
+
+terminal BREAK, DEFAULT, FUNC, INTERFACE, SELECT;
+terminal CASE, DEFER, GO, MAP, STRUCT;
+terminal CHAN, ELSE, GOTO, PACKAGE, SWITCH;
+terminal CONST, FALLTHROUGH, IF, RANGE, TYPE;
+terminal CONTINUE, FOR, IMPORT, RETURN, VAR;
+
+
+/* TIPOS DE DATOS */
+
+terminal INT;
+terminal FLOAT32;
+terminal FLOAT64;
+terminal STRING;
+terminal BOOL;
+terminal BYTE;
+terminal RUNE;
+
+
+/* VALORES BOOLEANOS */
+
+terminal TRUE;
+terminal FALSE;
+
+
+/* IDENTIFICADORES Y LITERALES */
+
+terminal String ID;
+
+terminal NUMERO;
+terminal NUMERO_DECIMAL;
+
+terminal String CADENA;
+terminal CARACTER;
+
+
+/* OPERADORES Y SÍMBOLOS */
+
+terminal PUNTO_COMA;
+terminal COMA;
+terminal PUNTO;
+terminal IGUAL;
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+
+/* =====================================
+   NO TERMINALES
+   ===================================== */
+
+non terminal inicio;
+non terminal programa;
+
+non terminal paquete;
+
+non terminal importaciones;
+non terminal importacion;
+
+non terminal declaraciones_globales;
+non terminal declaracion_global;
+
+non terminal atributo;
+non terminal constante;
+
+non terminal estructura;
+non terminal struct_con_campos;
+non terminal struct_vacio;
+non terminal campos_struct;
+non terminal campo_struct;
+
+
+non terminal funcion_principal;
+
+non terminal instrucciones;
+non terminal instruccion;
+
+non terminal variable;
+
+non terminal lista_identificadores;
+non terminal tipo;
+non terminal valor;
+
+
+/* =====================================
+   INICIO
+   ===================================== */
+
+start with inicio;
+
+inicio ::= programa
+{:
+
+    if (huboErrores) {
+
+        System.out.println(
+            "Análisis sintáctico finalizado "
+            + "con errores recuperables."
+        );
+
+    } else {
+
+        System.out.println(
+            "Análisis sintáctico finalizado correctamente."
+        );
+    }
+
+:}
+;
+
+
+/* =====================================
+   ESTRUCTURA GENERAL DEL ARCHIVO GO
+   ===================================== */
+
+programa ::= paquete
+             importaciones
+             declaraciones_globales
+             funcion_principal
+{:
+
+    System.out.println(
+        "Estructura general del programa "
+        + "reconocida correctamente"
+    );
+
+:}
+;
+
+
+/* =====================================
+   PACKAGE
+   ===================================== */
+
+paquete ::= PACKAGE:p ID:nombre PUNTO_COMA
+{:
+
+    System.out.println(
+        "Paquete reconocido correctamente"
+    );
+
+:}
+
+
+/* ERROR: FALTA ; */
+
+| PACKAGE:p ID:nombre error
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable en paquete: "
+        + "posible falta de ';'"
+    );
+
+:}
+
+
+/* ERROR: NOMBRE INVÁLIDO */
+
+| PACKAGE:p error PUNTO_COMA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable en paquete: "
+        + "nombre inválido"
+    );
+
+:}
+;
+
+
+/* =====================================
+   IMPORTACIONES
+   ===================================== */
+
+importaciones ::= importaciones importacion
+                |
+;
+
+
+/* IMPORTACIÓN CORRECTA */
+
+importacion ::= IMPORT:i CADENA:ruta PUNTO_COMA
+{:
+
+    System.out.println(
+        "Importación reconocida correctamente"
+    );
+
+:}
+
+
+/* ERROR: FALTA ; */
+
+| IMPORT:i CADENA:ruta error
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable en importación: "
+        + "posible falta de ';'"
+    );
+
+:}
+
+
+/* ERROR: RUTA INVÁLIDA */
+
+| IMPORT:i error PUNTO_COMA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable en importación: "
+        + "ruta incompleta o inválida"
+    );
+
+:}
+;
+
+
+/* =====================================
+   DECLARACIONES GLOBALES
+
+   En esta práctica se consideran
+   equivalentes a los atributos solicitados.
+   ===================================== */
+
+declaraciones_globales ::=
+      declaraciones_globales declaracion_global
+    |
+;
+
+
+/* PUEDE SER ATRIBUTO, CONSTANTE O ESTRUCTURA */
+
+declaracion_global ::=
+      atributo
+    | constante
+    | estructura
+;
+
+
+/* =====================================
+   STRUCT
+   Equivalente a clase en Go
+   ===================================== */
+
+estructura ::=
+      struct_con_campos
+    | struct_vacio
+;
+
+
+/* STRUCT CON MIEMBROS */
+
+struct_con_campos ::= TYPE:t
+                      ID:nombre
+                      STRUCT
+                      LLAVE_ABRE
+                      campos_struct
+                      LLAVE_CIERRA
+{:
+
+    System.out.println(
+        "Struct con miembros '" + nombre
+        + "' reconocido correctamente "
+        + "(equivalente a clase con miembros)"
+    );
+
+:}
+;
+
+
+/* STRUCT VACÍO */
+
+struct_vacio ::= TYPE:t
+                 ID:nombre
+                 STRUCT
+                 LLAVE_ABRE
+                 LLAVE_CIERRA
+{:
+
+    System.out.println(
+        "Struct vacío '" + nombre
+        + "' reconocido correctamente "
+        + "(equivalente a clase vacía)"
+    );
+
+:}
+;
+
+
+/* =====================================
+   CAMPOS DEL STRUCT
+   ===================================== */
+
+/* UNO O MÁS CAMPOS */
+
+campos_struct ::=
+      campo_struct
+    | campos_struct campo_struct
+;
+
+
+/* CAMPO / ATRIBUTO */
+
+campo_struct ::= ID:nombre tipo
+{:
+
+    System.out.println(
+        "Atributo del struct reconocido: "
+        + nombre
+    );
+
+:}
+;
+
+
+/* =====================================
+   ATRIBUTOS / VARIABLES GLOBALES
+   ===================================== */
+
+
+/* ATRIBUTO SIN INICIALIZACIÓN
+
+   Ejemplo:
+   var edad int;
+*/
+
+atributo ::= VAR:v
+             lista_identificadores
+             tipo
+             PUNTO_COMA
+{:
+
+    System.out.println(
+        "Declaración de atributo "
+        + "(variable global) reconocida correctamente"
+    );
+
+:}
+
+
+/* ATRIBUTO CON INICIALIZACIÓN
+
+   Ejemplo:
+   var salario float64 = 5000;
+*/
+
+| VAR:v
+  lista_identificadores
+  tipo
+  IGUAL
+  valor
+  PUNTO_COMA
+{:
+
+    System.out.println(
+        "Inicialización de atributo "
+        + "(variable global) reconocida correctamente"
+    );
+
+:}
+
+
+/* ERROR GENERAL EN ATRIBUTO */
+
+| VAR:v error PUNTO_COMA
+{:
+    huboErrores = true;
+
+    System.out.println(
+        "Error en declaración de atributo "
+        + "en línea " + vleft
+        + ", columna " + vright
+        + ". Posible falta de ',' o estructura inválida."
+    );
+:}
+;
+
+
+/* =====================================
+   CONSTANTES
+   ===================================== */
+
+
+/* CONSTANTE CORRECTA
+
+   Ejemplo:
+   const PI float64 = 3.1416;
+*/
+
+constante ::= CONST:c
+              ID:nombre
+              tipo
+              IGUAL
+              valor
+              PUNTO_COMA
+{:
+
+    System.out.println(
+        "Declaración de constante '"
+        + nombre
+        + "' reconocida correctamente"
+    );
+
+:}
+
+
+/* CONSTANTE SIN INICIALIZAR
+
+   Ejemplo:
+   const MAX int;
+*/
+
+| CONST:c
+  ID:nombre
+  tipo
+  PUNTO_COMA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error: la constante '"
+        + nombre
+        + "' debe inicializarse "
+        + "en línea " + cleft
+        + ", columna " + cright
+    );
+
+:}
+
+
+/* ERROR GENERAL DE CONSTANTE */
+
+| CONST:c error PUNTO_COMA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error en declaración de constante "
+        + "en línea " + cleft
+        + ", columna " + cright
+    );
+
+:}
+;
+
+
+/* =====================================
+   LISTA DE IDENTIFICADORES
+   ===================================== */
+
+
+/* UN SOLO IDENTIFICADOR */
+
+lista_identificadores ::= ID:nombre
+{:
+
+    System.out.println(
+        "Identificador reconocido: "
+        + nombre
+    );
+
+:}
+
+
+/* VARIOS IDENTIFICADORES
+
+   Ejemplo:
+   nombre, apellido
+*/
+
+| lista_identificadores COMA ID:nombre
+{:
+
+    System.out.println(
+        "Identificador adicional reconocido: "
+        + nombre
+    );
+
+:}
+;
+
+
+/* =====================================
+   TIPOS DE DATOS
+   ===================================== */
+
+tipo ::= INT
+{:
+    System.out.println("Tipo reconocido: int");
+:}
+
+| FLOAT32
+{:
+    System.out.println("Tipo reconocido: float32");
+:}
+
+| FLOAT64
+{:
+    System.out.println("Tipo reconocido: float64");
+:}
+
+| STRING
+{:
+    System.out.println("Tipo reconocido: string");
+:}
+
+| BOOL
+{:
+    System.out.println("Tipo reconocido: bool");
+:}
+
+| BYTE
+{:
+    System.out.println("Tipo reconocido: byte");
+:}
+
+| RUNE
+{:
+    System.out.println("Tipo reconocido: rune");
+:}
+
+
+/* TIPO DEFINIDO POR EL USUARIO */
+
+| ID:nombre
+{:
+
+    System.out.println(
+        "Tipo definido por el usuario reconocido: "
+        + nombre
+    );
+
+:}
+;
+
+
+/* =====================================
+   VALORES
+   ===================================== */
+
+
+/* ENTERO */
+
+valor ::= NUMERO
+{:
+
+    System.out.println(
+        "Valor entero reconocido"
+    );
+
+:}
+
+
+/* DECIMAL */
+
+| NUMERO_DECIMAL
+{:
+
+    System.out.println(
+        "Valor decimal reconocido"
+    );
+
+:}
+
+
+/* CADENA */
+
+| CADENA
+{:
+
+    System.out.println(
+        "Valor de cadena reconocido"
+    );
+
+:}
+
+
+/* CARÁCTER */
+
+| CARACTER
+{:
+
+    System.out.println(
+        "Valor de carácter reconocido"
+    );
+
+:}
+
+
+/* BOOLEANO TRUE */
+
+| TRUE
+{:
+
+    System.out.println(
+        "Valor booleano reconocido: true"
+    );
+
+:}
+
+
+/* BOOLEANO FALSE */
+
+| FALSE
+{:
+
+    System.out.println(
+        "Valor booleano reconocido: false"
+    );
+
+:}
+;
+
+
+/* =====================================
+   FUNCIÓN PRINCIPAL
+   ===================================== */
+
+
+/* FUNCIÓN PRINCIPAL CORRECTA */
+
+funcion_principal ::= FUNC:f
+                      ID:nombre
+                      PARENTESIS_ABRE
+                      PARENTESIS_CIERRA
+                      LLAVE_ABRE
+                      instrucciones
+                      LLAVE_CIERRA
+{:
+
+    if ("main".equals(nombre)) {
+
+        System.out.println(
+            "Función principal reconocida correctamente"
+        );
+
+        System.out.println(
+            "Estructura de llaves válida"
+        );
+
+    } else {
+
+        huboErrores = true;
+
+        System.out.println(
+            "Error en función principal: "
+            + "se esperaba 'main' y se encontró '"
+            + nombre + "'"
+        );
+    }
+
+:}
+
+
+/* FALTA EL NOMBRE */
+
+| FUNC:f
+  error
+  PARENTESIS_ABRE
+  PARENTESIS_CIERRA
+  LLAVE_ABRE
+  instrucciones
+  LLAVE_CIERRA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable en función principal: "
+        + "falta el nombre de la función"
+    );
+
+:}
+
+
+/* ERROR EN EL CUERPO */
+
+| FUNC:f
+  ID:nombre
+  PARENTESIS_ABRE
+  PARENTESIS_CIERRA
+  LLAVE_ABRE
+  error
+  LLAVE_CIERRA
+{:
+
+    huboErrores = true;
+
+    System.out.println(
+        "Error recuperable dentro de la función principal"
+    );
+
+:}
+;
+
+
+/* =====================================
+   INSTRUCCIONES DENTRO DE MAIN
+   ===================================== */
+
+instrucciones ::=
+      instrucciones instruccion
+    |
+;
+
+
+/* POR AHORA LA ACTIVIDAD 5 NECESITA
+   VARIABLES Y CONSTANTES */
+
+instruccion ::=
+      variable
+    | constante
+;
+
+
+/* =====================================
+   VARIABLES LOCALES
+   ===================================== */
+
+
+/* VARIABLE SIN INICIALIZACIÓN
+
+   Ejemplo:
+   var edad int;
+*/
+
+variable ::= VAR:v
+             lista_identificadores
+             tipo
+             PUNTO_COMA
+{:
+
+    System.out.println(
+        "Declaración de variable reconocida correctamente"
+    );
+
+:}
+
+
+/* VARIABLE CON INICIALIZACIÓN
+
+   Ejemplo:
+   var salario float64 = 5000;
+*/
+
+| VAR:v
+  lista_identificadores
+  tipo
+  IGUAL
+  valor
+  PUNTO_COMA
+{:
+
+    System.out.println(
+        "Inicialización de variable reconocida correctamente"
+    );
+
+:}
+
+
+/* ERROR GENERAL EN VARIABLE */
+
+| VAR:v error PUNTO_COMA
+{:
+    huboErrores = true;
+
+    System.out.println(
+        "Error en declaración de variable "
+        + "en línea " + vleft
+        + ", columna " + vright
+        + ". Posible falta de ',' o estructura inválida."
+    );
+:}
+;

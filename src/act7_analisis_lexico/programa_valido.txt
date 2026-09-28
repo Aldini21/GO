@@ -1,0 +1,71 @@
+package main;
+
+import "fmt";
+
+func main() {
+    var edad int = 20;
+    var activo bool = true;
+
+    if edad >= 18 && activo {
+        fmt.Println("Usuario mayor y activo");
+    } else {
+        fmt.Println("Usuario no autorizado");
+    }
+
+    var i int = 0;
+
+    for i = 0; i < 3; i = i + 1 {
+        fmt.Println("Iteracion:", i);
+    }
+
+    switch edad {
+        case 18:
+            fmt.Println("Tiene dieciocho");
+
+        case 20:
+            fmt.Println("Tiene veinte");
+
+        default:
+            fmt.Println("Otra edad");
+    }
+}
+
+
+/*
+
+package main;
+
+import "fmt";
+
+func main() {
+    var contador int = 0;
+    var i int = 0;
+
+    for contador < 3 {
+        fmt.Println("Contador:", contador);
+
+        if contador == 1 {
+            fmt.Println("Contador vale uno");
+        } else {
+            fmt.Println("Contador no vale uno");
+        }
+
+        contador = contador + 1;
+    }
+
+    for {
+        i = i + 1;
+
+        if i >= 3 {
+            break;
+        }
+
+        fmt.Println("Valor de i:", i);
+    }
+
+    fmt.Println("Fin del programa");
+}
+
+
+
+*/

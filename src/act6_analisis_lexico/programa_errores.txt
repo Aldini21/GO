@@ -1,0 +1,20 @@
+package main;
+
+import "fmt";
+
+var a, b int = 10;
+var x, y, z float64 = 1.5, 2.5;
+var activo, disponible bool = true;
+
+func main() {
+
+    var numero1, numero2 int = 5;
+
+    fmt.Println("El programa debe continuar");
+
+    var p, q int = 10, 20;
+
+    p = p + q;
+
+    fmt.Println("Resultado:", p);
+}

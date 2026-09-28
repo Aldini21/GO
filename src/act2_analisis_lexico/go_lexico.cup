@@ -1,0 +1,100 @@
+/*
+NOMBRES COMPLETOS
+
+*/
+
+package act2_analisis_lexico;
+
+import java_cup.runtime.*;
+
+/* =========================================
+   PALABRAS CLAVE DE GO
+   ========================================= */
+
+terminal BREAK, DEFAULT, FUNC, INTERFACE, SELECT;
+terminal CASE, DEFER, GO, MAP, STRUCT;
+terminal CHAN, ELSE, GOTO, PACKAGE, SWITCH;
+terminal CONST, FALLTHROUGH, IF, RANGE, TYPE;
+terminal CONTINUE, FOR, IMPORT, RETURN, VAR;
+
+
+/* =========================================
+   IDENTIFICADORES Y LITERALES
+   ========================================= */
+
+terminal IDENTIFICADOR;
+terminal ENTERO;
+terminal FLOTANTE;
+terminal CADENA;
+
+
+/* =========================================
+   OPERADORES ARITMETICOS
+   ========================================= */
+
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+
+
+/* =========================================
+   OPERADORES RELACIONALES
+   ========================================= */
+
+terminal MENOR;
+terminal MAYOR;
+terminal MENOR_IGUAL;
+terminal MAYOR_IGUAL;
+terminal IGUAL_IGUAL;
+terminal DIFERENTE;
+
+
+/* =========================================
+   OPERADORES LOGICOS
+   ========================================= */
+
+terminal AND;
+terminal OR;
+terminal NOT;
+
+
+/* =========================================
+   OTROS OPERADORES
+   ========================================= */
+
+terminal ASIGNACION;
+
+
+/* =========================================
+   SIMBOLOS
+   ========================================= */
+
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+
+terminal CORCHETE_ABRE;
+terminal CORCHETE_CIERRA;
+
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+terminal COMA;
+terminal PUNTO_COMA;
+terminal PUNTO;
+
+
+/* =========================================
+   NO TERMINALES
+   ========================================= */
+
+non terminal inicio;
+
+
+/* =========================================
+   REGLA INICIAL
+   ========================================= */
+
+start with inicio;
+
+inicio ::= ;

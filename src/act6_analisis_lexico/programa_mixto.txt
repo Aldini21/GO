@@ -1,0 +1,34 @@
+package main;
+
+import "fmt";
+
+var nombre, apellido string;
+var edad int = 20;
+
+var a, b int = 10, 20;
+
+var x, y, z float64 = 1.5, 2.5;
+
+var activo, disponible bool = true, false;
+
+func main() {
+
+    var numero1, numero2 int;
+    var p, q int = 5, 10;
+
+    fmt.Scan(&numero1, &numero2);
+
+    p = p + q;
+
+    fmt.Println("Resultado correcto:", p);
+
+    var error1, error2 int = 100;
+
+    fmt.Println("El analizador continuo");
+
+    var m, n, o int = 1, 2, 3;
+
+    q = p * 2;
+
+    fmt.Println("Resultado final:", q);
+}

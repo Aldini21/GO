@@ -1,0 +1,130 @@
+/* 
+NOMBRES COMPLETOS 
+*/
+package act3_analisis_lexico;
+import java_cup.runtime.*;
+
+/* TERMINALES */
+terminal BREAK, DEFAULT, FUNC, INTERFACE, SELECT;
+terminal CASE, DEFER, GO, MAP, STRUCT;
+terminal CHAN, ELSE, GOTO, PACKAGE, SWITCH;
+terminal CONST, FALLTHROUGH, IF, RANGE, TYPE;
+terminal CONTINUE, FOR, IMPORT, RETURN, VAR;
+
+terminal String ID;
+terminal NUMERO;
+terminal String CADENA;
+
+terminal PUNTO_COMA;
+terminal COMA;
+terminal PUNTO;
+terminal IGUAL;
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+/* NO TERMINALES */
+non terminal inicio;
+non terminal programa;
+non terminal paquete;
+non terminal importaciones;
+non terminal importacion;
+non terminal funcion_principal;
+non terminal declaracion_tipo;
+non terminal estructura;
+non terminal funcion;
+non terminal parametros;
+non terminal parametro;
+non terminal instrucciones;
+non terminal instruccion;
+non terminal condicion;
+non terminal expresion;
+
+/* REGLAS GRAMATICALES */
+/* INICIO */
+inicio ::= programa
+{:
+    System.out.println(
+        "Regla reconocida: inicio"
+    );
+:}
+;
+/* ESTRUCTURA GENERAL DEL ARCHIVO GO */
+
+programa ::= paquete importaciones funcion_principal
+{:
+    System.out.println(
+        "Regla reconocida: programa"
+    );
+:}
+;
+
+
+/* =====================================
+   PACKAGE
+   ===================================== */
+
+paquete ::= PACKAGE:p ID:nombre
+{:
+    System.out.println(
+        "Regla reconocida: paquete - línea " + pleft
+    );
+:}
+;
+
+
+/* =====================================
+   IMPORTACIONES
+   ===================================== */
+
+/*
+   Puede haber cero o más importaciones.
+*/
+
+importaciones ::= importaciones importacion
+                |
+                ;
+
+
+/* Una importación de Go:
+   
+   import "fmt"
+*/
+
+importacion ::= IMPORT:i CADENA:ruta
+{:
+    System.out.println(
+        "Regla reconocida: importacion - línea " + ileft
+    );
+:}
+;
+
+
+/* =====================================
+   FUNCIÓN PRINCIPAL
+   ===================================== */
+
+/*
+   Ejemplo:
+
+   func main() {
+   }
+*/
+
+funcion_principal ::= FUNC:f ID:nombre
+                      PARENTESIS_ABRE
+                      PARENTESIS_CIERRA
+                      LLAVE_ABRE
+                      LLAVE_CIERRA
+{:
+    System.out.println(
+        "Regla reconocida: funcion_principal - línea " + fleft
+    );
+:}
+;
+

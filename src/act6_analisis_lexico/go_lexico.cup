@@ -1,0 +1,900 @@
+/*
+NOMBRES COMPLETOS
+
+
+*/
+
+package act6_analisis_lexico;
+
+import java_cup.runtime.Symbol;
+
+/* =========================================================
+   CODIGO DEL PARSER
+   ========================================================= */
+
+parser code {:
+
+    private boolean huboErrores = false;
+
+    public boolean getHuboErrores() {
+        return huboErrores;
+    }
+
+    @Override
+    public void report_error(String message, Object info) {
+
+        huboErrores = true;
+
+        if (info instanceof Symbol) {
+
+            Symbol s = (Symbol) info;
+
+            System.out.println(
+                "[ERROR SINTACTICO] Linea: " + s.left
+                + ", Columna: " + s.right
+                + " | Cerca de: " + s.value
+            );
+
+        } else {
+
+            System.out.println(
+                "[ERROR SINTACTICO] " + message
+            );
+        }
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info)
+            throws Exception {
+
+        huboErrores = true;
+
+        report_error(message, info);
+    }
+
+    private void errorSintactico(String causa, int linea, int columna) {
+        System.out.println(
+            "[ERROR SINTACTICO] Linea: " + linea
+            + ", Columna: " + columna
+            + " | Causa: " + causa
+        );
+        huboErrores = true;
+    }
+
+:};
+
+
+/* =========================================================
+   TERMINALES GENERALES
+   ========================================================= */
+
+terminal PACKAGE;
+terminal IMPORT;
+terminal FUNC;
+terminal VAR;
+terminal CONST;
+terminal TYPE;
+terminal STRUCT;
+
+
+/* =========================================================
+   PALABRAS RESERVADAS CONSERVADAS DE ACTIVIDAD 2
+   ========================================================= */
+
+terminal BREAK;
+terminal DEFAULT;
+terminal INTERFACE;
+terminal SELECT;
+
+terminal CASE;
+terminal DEFER;
+terminal GO;
+terminal MAP;
+
+terminal CHAN;
+terminal ELSE;
+terminal GOTO;
+terminal SWITCH;
+
+terminal FALLTHROUGH;
+terminal IF;
+terminal RANGE;
+
+terminal CONTINUE;
+terminal FOR;
+terminal RETURN;
+
+
+/* =========================================================
+   TIPOS DE DATOS
+   ========================================================= */
+
+terminal INT;
+terminal FLOAT32;
+terminal FLOAT64;
+terminal STRING;
+terminal BOOL;
+terminal BYTE;
+terminal RUNE;
+
+
+/* =========================================================
+   BOOLEANOS
+   ========================================================= */
+
+terminal TRUE;
+terminal FALSE;
+
+
+/* =========================================================
+   IDENTIFICADORES Y LITERALES
+   ========================================================= */
+
+terminal String ID;
+terminal String NUMERO;
+terminal String NUMERO_DECIMAL;
+terminal String CADENA;
+terminal String CARACTER;
+
+
+/* =========================================================
+   OPERADORES ARITMETICOS
+   ========================================================= */
+
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+terminal MODULO;
+
+
+/* =========================================================
+   OPERADORES RELACIONALES
+   ACTIVIDAD 2
+   ========================================================= */
+
+terminal MENOR;
+terminal MAYOR;
+terminal MENOR_IGUAL;
+terminal MAYOR_IGUAL;
+terminal IGUAL_IGUAL;
+terminal DIFERENTE;
+
+
+/* =========================================================
+   OPERADORES LOGICOS
+   ACTIVIDAD 2
+   ========================================================= */
+
+terminal AND;
+terminal OR;
+terminal NOT;
+
+
+/* =========================================================
+   ASIGNACION
+   ========================================================= */
+
+terminal IGUAL;
+
+
+/* =========================================================
+   SIMBOLOS
+   ========================================================= */
+
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+
+terminal CORCHETE_ABRE;
+terminal CORCHETE_CIERRA;
+
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+terminal COMA;
+terminal PUNTO_COMA;
+terminal PUNTO;
+terminal AMPERSAND;
+
+
+/* =========================================================
+   NO TERMINALES
+   ========================================================= */
+
+non terminal programa;
+
+non terminal paquete;
+non terminal importaciones;
+non terminal importacion;
+
+non terminal declaraciones;
+non terminal declaracion;
+
+non terminal declaracion_variable;
+non terminal Integer lista_ids_declaracion;
+non terminal Integer lista_valores_declaracion;
+non terminal declaracion_constante;
+
+non terminal declaracion_struct;
+non terminal atributos;
+non terminal atributo;
+
+non terminal funcion_main;
+
+non terminal sentencias;
+non terminal sentencia;
+
+non terminal tipo;
+non terminal valor;
+
+/* ACTIVIDAD 6 */
+non terminal lectura;
+non terminal lista_lectura;
+non terminal escritura;
+non terminal lista_elementos;
+non terminal elemento;
+non terminal asignacion;
+non terminal expresion;
+
+
+/* =========================================================
+   SIMBOLO INICIAL
+   ========================================================= */
+
+/* =========================================================
+   PRECEDENCIA DE EXPRESIONES - ACTIVIDAD 6
+   Igual que en Go: ! primero, luego * / %, luego + -,
+   despues && y finalmente ||.
+   ========================================================= */
+
+precedence left OR;
+precedence left AND;
+precedence left SUMA, RESTA;
+precedence left MULTIPLICACION, DIVISION, MODULO;
+precedence right NOT;
+
+start with programa;
+
+
+/* =========================================================
+   ESTRUCTURA GENERAL DEL PROGRAMA
+   ========================================================= */
+
+programa ::=
+        paquete
+        importaciones
+        declaraciones
+        funcion_main
+        declaraciones
+        {:
+            System.out.println(
+                "Estructura general del programa reconocida correctamente"
+            );
+        :}
+;
+
+
+/* =========================================================
+   PACKAGE
+   ========================================================= */
+
+paquete ::=
+        PACKAGE ID PUNTO_COMA
+        {:
+            System.out.println(
+                "Paquete reconocido correctamente"
+            );
+        :}
+
+        |
+
+        PACKAGE ID
+        {:
+            System.out.println(
+                "Error recuperable en paquete: falta ';'"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* =========================================================
+   IMPORTACIONES
+   ========================================================= */
+
+importaciones ::=
+        importaciones importacion
+        |
+;
+
+
+importacion ::=
+        IMPORT CADENA PUNTO_COMA
+        {:
+            System.out.println(
+                "Importacion reconocida correctamente"
+            );
+        :}
+
+        |
+
+        IMPORT CADENA
+        {:
+            System.out.println(
+                "Error recuperable en importacion: falta ';'"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* =========================================================
+   DECLARACIONES GENERALES
+   ========================================================= */
+
+declaraciones ::=
+        declaraciones declaracion
+        |
+;
+
+
+declaracion ::=
+        declaracion_variable
+        |
+        declaracion_constante
+        |
+        declaracion_struct
+;
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+declaracion_variable ::=
+        VAR ID:nombre tipo PUNTO_COMA
+        {:
+            System.out.println(
+                "Declaracion de variable reconocida: " + nombre
+            );
+        :}
+
+        |
+
+        VAR ID:nombre tipo IGUAL valor PUNTO_COMA
+        {:
+            System.out.println(
+                "Declaracion de variable con inicializacion reconocida: "
+                + nombre
+            );
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:cantidad tipo PUNTO_COMA
+        {:
+            System.out.println(
+                "Declaracion multiple de variables reconocida: "
+                + (cantidad + 1) + " variables"
+            );
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:cantidadIds tipo
+        IGUAL valor COMA lista_valores_declaracion:cantidadValores PUNTO_COMA
+        {:
+            int totalIds = cantidadIds + 1;
+            int totalValores = cantidadValores + 1;
+
+            if (totalIds == totalValores) {
+                System.out.println(
+                    "Declaracion multiple de variables con inicializacion reconocida: "
+                    + totalIds + " variables"
+                );
+            } else {
+                errorSintactico(
+                    "declaracion multiple: se declararon "
+                    + totalIds + " variables pero se proporcionaron "
+                    + totalValores + " valores",
+                    nombreleft,
+                    nombreright
+                );
+            }
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:cantidadIds tipo
+        IGUAL valor PUNTO_COMA
+        {:
+            errorSintactico(
+                "declaracion multiple: se declararon "
+                + (cantidadIds + 1)
+                + " variables pero se proporciono 1 valor",
+                nombreleft,
+                nombreright
+            );
+        :}
+
+        |
+
+        VAR error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error recuperable en declaracion de variable"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* Lista de identificadores para declaraciones multiples. */
+lista_ids_declaracion ::=
+        ID
+        {:
+            RESULT = 1;
+        :}
+        |
+        lista_ids_declaracion:cantidad COMA ID
+        {:
+            RESULT = cantidad + 1;
+        :}
+;
+
+
+/* Lista de valores para inicializaciones multiples. */
+lista_valores_declaracion ::=
+        valor
+        {:
+            RESULT = 1;
+        :}
+        |
+        lista_valores_declaracion:cantidad COMA valor
+        {:
+            RESULT = cantidad + 1;
+        :}
+;
+
+
+/* =========================================================
+   CONSTANTES
+   ========================================================= */
+
+declaracion_constante ::=
+        CONST ID:nombre tipo IGUAL valor PUNTO_COMA
+        {:
+            System.out.println(
+                "Declaracion de constante reconocida: " + nombre
+            );
+        :}
+
+        |
+
+        CONST ID:nombre tipo PUNTO_COMA
+        {:
+            System.out.println(
+                "Error: const debe inicializarse -> " + nombre
+            );
+
+            huboErrores = true;
+        :}
+
+        |
+
+        CONST error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error recuperable en declaracion de constante"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* =========================================================
+   STRUCT
+   ========================================================= */
+
+declaracion_struct ::=
+        TYPE ID:nombre STRUCT LLAVE_ABRE atributos LLAVE_CIERRA
+        {:
+            System.out.println(
+                "Struct reconocido correctamente: " + nombre
+            );
+        :}
+;
+
+
+/* =========================================================
+   ATRIBUTOS DEL STRUCT
+   ========================================================= */
+
+atributos ::=
+        atributos atributo
+        |
+;
+
+
+atributo ::=
+        ID:nombre tipo
+        {:
+            System.out.println(
+                "Atributo del struct reconocido: " + nombre
+            );
+        :}
+
+        |
+
+        ID:nombre tipo PUNTO_COMA
+        {:
+            System.out.println(
+                "Atributo del struct reconocido: " + nombre
+            );
+        :}
+;
+
+
+/* =========================================================
+   FUNCION MAIN
+   ========================================================= */
+
+funcion_main ::=
+        FUNC ID:nombre
+        PARENTESIS_ABRE
+        PARENTESIS_CIERRA
+        LLAVE_ABRE
+        sentencias
+        LLAVE_CIERRA
+        {:
+
+            if ("main".equals(nombre)) {
+
+                System.out.println(
+                    "Funcion principal reconocida correctamente"
+                );
+
+            } else {
+
+                System.out.println(
+                    "Error en funcion principal: se esperaba 'main' "
+                    + "y se encontro '" + nombre + "'"
+                );
+
+                huboErrores = true;
+            }
+
+        :}
+;
+
+/* =========================================================
+   SENTENCIAS DENTRO DE MAIN
+   ========================================================= */
+
+sentencias ::=
+        sentencias sentencia
+        |
+;
+
+
+sentencia ::=
+        declaracion_variable
+        |
+        declaracion_constante
+        |
+        lectura
+        |
+        escritura
+        |
+        asignacion
+        |
+        IGUAL:igual expresion PUNTO_COMA
+        {:
+            errorSintactico(
+                "falta identificador antes de '=' en la asignacion",
+                igualleft,
+                igualright
+            );
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - LECTURA EN GO
+   Equivalente a la regla 'leer' solicitada en la practica.
+   Se utiliza la sintaxis de Go: fmt.Scan(&a, &b);
+   ========================================================= */
+
+lectura ::=
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_lectura PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            if ("fmt".equals(paquete) && "Scan".equals(metodo)) {
+                System.out.println("Sentencia de lectura reconocida correctamente");
+            } else {
+                System.out.println(
+                    "Error en lectura: se esperaba fmt.Scan(...)"
+                );
+                huboErrores = true;
+            }
+        :}
+        |
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_lectura error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error en lectura: falta ')' antes de ';'"
+            );
+            huboErrores = true;
+        :}
+;
+
+lista_lectura ::=
+        AMPERSAND ID
+        |
+        lista_lectura COMA AMPERSAND ID
+        |
+        lista_lectura AMPERSAND:amp ID
+        {:
+            errorSintactico(
+                "falta coma entre identificadores en la lectura",
+                ampleft,
+                ampright
+            );
+        :}
+        |
+        lista_lectura COMA COMA:comaDuplicada AMPERSAND ID
+        {:
+            errorSintactico(
+                "coma duplicada en la lista de lectura",
+                comaDuplicadaleft,
+                comaDuplicadaright
+            );
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - ESCRITURA EN GO
+   Equivalente a la regla 'escribir' solicitada.
+   Se utiliza: fmt.Println(...);
+   ========================================================= */
+
+escritura ::=
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_elementos PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            if ("fmt".equals(paquete) && "Println".equals(metodo)) {
+                System.out.println("Sentencia de escritura reconocida correctamente");
+            } else {
+                System.out.println(
+                    "Error en escritura: se esperaba fmt.Println(...)"
+                );
+                huboErrores = true;
+            }
+        :}
+        |
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_elementos PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "falta ')' antes de ';' en la escritura",
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID PUNTO ID PARENTESIS_ABRE COMA:coma lista_elementos
+        PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            errorSintactico(
+                "falta un elemento antes de la coma en la escritura",
+                comaleft,
+                comaright
+            );
+        :}
+;
+
+lista_elementos ::=
+        elemento
+        |
+        lista_elementos COMA elemento
+;
+
+elemento ::=
+        CADENA
+        |
+        CARACTER
+        |
+        expresion
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - ASIGNACIONES Y EXPRESIONES
+   ========================================================= */
+
+asignacion ::=
+        ID:nombre IGUAL expresion PUNTO_COMA
+        {:
+            System.out.println(
+                "Asignacion con expresion reconocida: " + nombre
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion SUMA PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '+' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion RESTA PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '-' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion MULTIPLICACION PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '*' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion DIVISION PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '/' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion MODULO PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '%' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+;
+
+expresion ::=
+        ID
+        |
+        NUMERO
+        |
+        NUMERO_DECIMAL
+        |
+        TRUE
+        |
+        FALSE
+        |
+        PARENTESIS_ABRE expresion PARENTESIS_CIERRA
+        |
+        NOT expresion
+        {:
+            System.out.println("Expresion logica con ! reconocida");
+        :}
+        |
+        expresion SUMA expresion
+        {:
+            System.out.println("Expresion aritmetica con + reconocida");
+        :}
+        |
+        expresion RESTA expresion
+        {:
+            System.out.println("Expresion aritmetica con - reconocida");
+        :}
+        |
+        expresion MULTIPLICACION expresion
+        {:
+            System.out.println("Expresion aritmetica con * reconocida");
+        :}
+        |
+        expresion DIVISION expresion
+        {:
+            System.out.println("Expresion aritmetica con / reconocida");
+        :}
+        |
+        expresion MODULO expresion
+        {:
+            System.out.println("Expresion aritmetica con % reconocida");
+        :}
+        |
+        expresion AND expresion
+        {:
+            System.out.println("Expresion logica con && reconocida");
+        :}
+        |
+        expresion OR expresion
+        {:
+            System.out.println("Expresion logica con || reconocida");
+        :}
+;
+
+
+/* =========================================================
+   TIPOS
+   ========================================================= */
+
+tipo ::=
+        INT
+        {:
+            System.out.println("Tipo reconocido: int");
+        :}
+
+        |
+
+        FLOAT32
+        {:
+            System.out.println("Tipo reconocido: float32");
+        :}
+
+        |
+
+        FLOAT64
+        {:
+            System.out.println("Tipo reconocido: float64");
+        :}
+
+        |
+
+        STRING
+        {:
+            System.out.println("Tipo reconocido: string");
+        :}
+
+        |
+
+        BOOL
+        {:
+            System.out.println("Tipo reconocido: bool");
+        :}
+
+        |
+
+        BYTE
+        {:
+            System.out.println("Tipo reconocido: byte");
+        :}
+
+        |
+
+        RUNE
+        {:
+            System.out.println("Tipo reconocido: rune");
+        :}
+;
+
+
+/* =========================================================
+   VALORES
+   ========================================================= */
+
+valor ::=
+        NUMERO
+        |
+        NUMERO_DECIMAL
+        |
+        CADENA
+        |
+        CARACTER
+        |
+        TRUE
+        |
+        FALSE
+;

@@ -1,0 +1,31 @@
+package main;
+
+import "fmt";
+
+type Persona struct {
+    edad int
+    nombre string
+}
+
+type Vacio struct {
+}
+
+var edad int;
+
+var nombre, apellido string;
+
+var salario float64 = 5000;
+
+const PI float64 = 3.1416;
+
+const MAX int = 100;
+
+func main() {
+
+    var activo bool = true;
+
+    var letra rune = 'A';
+
+    var contador int;
+
+}

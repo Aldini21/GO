@@ -1,0 +1,283 @@
+/* 
+
+*/
+
+package act4_analisis_lexico;
+import java_cup.runtime.*;
+
+parser code {:
+private boolean huboErrores = false;
+@Override
+public void report_error(String message, Object info) {
+
+    huboErrores = true;
+
+    if (info instanceof Symbol) {
+
+        Symbol s = (Symbol) info;
+
+        if (s.left == -1 && s.right == -1) {
+
+            System.out.println(
+                "Error sintáctico al final del archivo: se esperaba otra estructura"
+            );
+
+        } else {
+
+            System.out.println(
+                "Error sintáctico en línea "
+                + s.left
+                + ", columna "
+                + s.right
+                + ": se encontró '"
+                + s.value
+                + "'"
+            );
+        }
+
+    } else {
+
+        System.out.println(
+            "Error sintáctico: " + message
+        );
+    }
+}
+
+@Override
+public void report_fatal_error(String message, Object info)
+        throws Exception {
+
+    if (info instanceof Symbol) {
+
+        Symbol s = (Symbol) info;
+
+        if (s.left == -1 && s.right == -1) {
+
+            System.out.println(
+                "Error fatal al final del archivo."
+            );
+
+        } else {
+
+            System.out.println(
+                "Error fatal en línea "
+                + s.left
+                + ", columna "
+                + s.right
+                + ": se encontró '"
+                + s.value
+                + "'"
+            );
+        }
+
+    } else {
+
+        System.out.println(
+            "Error fatal: " + message
+        );
+    }
+
+    throw new Exception("Análisis detenido por error fatal.");
+}
+
+:};
+
+/* TERMINALES */
+terminal BREAK, DEFAULT, FUNC, INTERFACE, SELECT;
+terminal CASE, DEFER, GO, MAP, STRUCT;
+terminal CHAN, ELSE, GOTO, PACKAGE, SWITCH;
+terminal CONST, FALLTHROUGH, IF, RANGE, TYPE;
+terminal CONTINUE, FOR, IMPORT, RETURN, VAR;
+
+terminal String ID;
+terminal NUMERO;
+terminal String CADENA;
+
+terminal PUNTO_COMA;
+terminal COMA;
+terminal PUNTO;
+terminal IGUAL;
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+/* NO TERMINALES */
+non terminal inicio;
+non terminal programa;
+non terminal paquete;
+non terminal importaciones;
+non terminal importacion;
+non terminal funcion_principal;
+non terminal declaracion_tipo;
+non terminal estructura;
+non terminal funcion;
+non terminal parametros;
+non terminal parametro;
+non terminal instrucciones;
+non terminal instruccion;
+non terminal condicion;
+non terminal expresion;
+
+/* REGLAS GRAMATICALES */
+
+/* INICIO */
+
+inicio ::= programa
+{:
+    if (huboErrores) {
+
+        System.out.println(
+            "Análisis sintáctico finalizado con errores recuperables."
+        );
+
+    } else {
+
+        System.out.println(
+            "Análisis sintáctico finalizado correctamente."
+        );
+    }
+:}
+;
+
+
+/* =====================================
+   ESTRUCTURA GENERAL DEL ARCHIVO GO
+   ===================================== */
+
+programa ::= paquete importaciones funcion_principal
+{:
+    System.out.println(
+        "Estructura general del programa reconocida correctamente"
+    );
+:}
+;
+
+
+/* =====================================
+   PACKAGE
+   ===================================== */
+
+paquete ::= PACKAGE:p ID:nombre PUNTO_COMA
+{:
+    System.out.println(
+        "Paquete reconocido correctamente"
+    );
+:}
+
+| PACKAGE:p ID:nombre error
+{:
+    System.out.println(
+        "Error recuperable en paquete: posible falta de ';'"
+    );
+:}
+
+| PACKAGE:p error PUNTO_COMA
+{:
+    System.out.println(
+        "Error recuperable en paquete: nombre o ruta inválida"
+    );
+:}
+;
+
+/* =====================================
+   IMPORTACIONES
+   ===================================== */
+
+importaciones ::= importaciones importacion
+                |
+                ;
+
+
+importacion ::= IMPORT:i CADENA:ruta PUNTO_COMA
+{:
+    System.out.println(
+        "Importación reconocida correctamente"
+    );
+:}
+
+| IMPORT:i CADENA:ruta error
+{:
+    System.out.println(
+        "Error recuperable en importación: posible falta de ';'"
+    );
+:}
+
+| IMPORT:i error PUNTO_COMA
+{:
+    System.out.println(
+        "Error recuperable en importación: ruta incompleta o inválida"
+    );
+:}
+;
+
+
+/* =====================================
+   FUNCIÓN PRINCIPAL
+   ===================================== */
+
+funcion_principal ::= FUNC:f ID:nombre
+                      PARENTESIS_ABRE
+                      PARENTESIS_CIERRA
+                      LLAVE_ABRE
+                      LLAVE_CIERRA
+{:
+    if ("main".equals(nombre)) {
+
+        System.out.println(
+            "Función principal reconocida correctamente"
+        );
+
+        System.out.println(
+            "Estructura de llaves válida"
+        );
+
+    } else {
+        huboErrores = true;
+        System.out.println(
+            "Error en función principal: se esperaba 'main' y se encontró '"
+            + nombre + "'"
+        );
+    }
+:}
+
+/* Falta el nombre de la función */
+| FUNC:f error
+  PARENTESIS_ABRE
+  PARENTESIS_CIERRA
+  LLAVE_ABRE
+  LLAVE_CIERRA
+{:
+    System.out.println(
+        "Error recuperable en función principal: falta el nombre de la función"
+    );
+:}
+
+/* Falta la llave de apertura */
+| FUNC:f ID:nombre
+  PARENTESIS_ABRE
+  PARENTESIS_CIERRA
+  error
+  LLAVE_CIERRA
+{:
+    System.out.println(
+        "Error recuperable en función principal: falta la llave de apertura '{'"
+    );
+:}
+
+/* Falta la llave de cierre */
+| FUNC:f ID:nombre
+  PARENTESIS_ABRE
+  PARENTESIS_CIERRA
+  LLAVE_ABRE
+  error
+{:
+    System.out.println(
+        "Error recuperable en función principal: falta la llave de cierre '}'"
+    );
+:}
+;

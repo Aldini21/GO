@@ -1,0 +1,35 @@
+package main;
+
+import "fmt";
+
+type Estudiante struct {
+    nombre string
+    edad int
+}
+
+type Vacio struct {
+}
+
+var nombre string;
+
+const EDAD_MAXIMA int = 100;
+
+var edad apellido int;
+
+var salario float64 = 2500.50;
+
+const IVA float64;
+
+var activo bool = true;
+
+func main() {
+
+    var contador int;
+
+    var letra rune = 'A';
+
+    const LIMITE int;
+
+    var mensaje string = "Hola";
+
+}
