@@ -1,0 +1,45 @@
+package main;
+import "fmt";
+
+func saludar() {
+    fmt.Println("Hola desde Go");
+}
+
+func mostrarMensaje(mensaje string) {
+    fmt.Println(mensaje);
+}
+
+func obtenerValor() int {
+    return 10;
+}
+
+func sumar(a int, b int) int {
+    return a + b;
+}
+
+func procesar(limite int) {
+    var i int = 0;
+
+    for i = 0; i < limite; i++ {
+        if i < 2 {
+            fmt.Println("Valor pequeno:", i);
+        } else {
+            fmt.Println("Valor:", i);
+        }
+    }
+}
+
+func main() {
+    var resultado int;
+
+    saludar();
+    mostrarMensaje("Probando metodos");
+
+    resultado = sumar(10, 20);
+    fmt.Println("Resultado:", resultado);
+
+    resultado = sumar(obtenerValor(), 5);
+    fmt.Println("Resultado anidado:", resultado);
+
+    procesar(3);
+}

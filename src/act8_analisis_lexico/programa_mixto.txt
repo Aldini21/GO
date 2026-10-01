@@ -1,0 +1,34 @@
+package main;
+import "fmt";
+
+func saludar() {
+    fmt.Println("Inicio correcto");
+}
+
+func sumar(a int, b int) int {
+    return a + b;
+}
+
+func mostrarMensaje(mensaje string) {
+    fmt.Println(mensaje);
+}
+
+func main() {
+    var resultado int;
+
+    saludar();
+
+    resultado = sumar(10, 20);
+    fmt.Println("Resultado correcto:", resultado);
+
+    mostrarMensaje("Hola", "Extra");
+
+    resultado = sumar(5);
+
+    saludar(100);
+
+    mostrarMensaje("El programa continua");
+
+    resultado = sumar(30, 40);
+    fmt.Println("Resultado final:", resultado);
+}
