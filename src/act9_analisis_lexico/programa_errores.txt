@@ -1,0 +1,28 @@
+package main;
+import "fmt";
+
+type mi_sistema struct {
+    AtributoIncorrecto int;
+}
+
+const VALOR_CONSTANTE float64;
+
+func proceso() {
+    var x int;
+    var x int = z + 10;
+    var Resultado int = 5;
+}
+
+func CalcularTotal() int {
+    return 1;
+}
+
+func main() {
+    const limiteMaximo int = 50;
+    var contador int = 0;
+    var contador int = 1;
+
+    total = contador + 5;
+    metodoInexistente();
+    fmt.Println(contador);
+}

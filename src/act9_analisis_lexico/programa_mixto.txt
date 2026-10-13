@@ -1,0 +1,30 @@
+package main;
+import "fmt";
+
+type Alumno struct {
+    nombre string;
+    Calificacion int;
+}
+
+func sumar(a int, b int) int {
+    var resultadoSuma int = a + b;
+    return resultadoSuma;
+}
+
+func mostrarMensaje(mensaje string) {
+    fmt.Println(mensaje);
+}
+
+func main() {
+    const LIMITE int = 10;
+    var total int = 0;
+    var promedio int;
+
+    total = sumar(5, 10);
+    mostrarMensaje("Total calculado", total);
+    total = sumar(5);
+    LIMITE = 20;
+    contadorFinal = total + 1;
+
+    fmt.Println("Total:", total);
+}
