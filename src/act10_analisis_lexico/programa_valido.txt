@@ -1,0 +1,68 @@
+package main;
+import "fmt";
+
+/* Actividad 10: programa valido (verificacion de tipos en Go) */
+
+const PI float64 = 3.1416;
+const LIMITE int = 100;
+var base int = 10;
+var factor float64 = 2.5;
+var esActivo bool = true;
+
+type Evaluador struct {
+    nombre string;
+    intentos int;
+    activo bool;
+}
+
+func promedio(suma float64, cantidad int) float64 {
+    var resultadoPromedio float64 = suma / 2.0;
+    return resultadoPromedio;
+}
+
+func ejecutar() {
+    var resultado int = 0;
+    var calculoComplejo float64 = 0.0;
+    var condicion bool = false;
+    var mensaje string = "Calculo";
+    var inicial rune = 'E';
+    var codigo byte = 'b';
+    var evaluador Evaluador = Evaluador{};
+
+    // Expresiones aritmeticas con variables y constantes
+    resultado = base * 5;
+    resultado = (resultado + LIMITE) % 7;
+    calculoComplejo = (factor + 10) * PI;
+    calculoComplejo = promedio(calculoComplejo, resultado);
+    mensaje = mensaje + " correcto";
+
+    // Expresiones relacionales y logicas
+    condicion = (resultado > 20) && esActivo;
+    condicion = !condicion || resultado != LIMITE;
+
+    // Atributos del struct
+    evaluador.nombre = "Principal";
+    evaluador.intentos = resultado + 1;
+    evaluador.activo = evaluador.intentos >= 1 && condicion;
+
+    if condicion {
+        fmt.Println(mensaje, evaluador.nombre);
+    } else {
+        fmt.Println("Condicion falsa", inicial, codigo);
+    }
+
+    for resultado = 0; resultado < 3; resultado++ {
+        fmt.Println("Intento:", resultado);
+    }
+
+    switch evaluador.nombre {
+        case "Principal":
+            fmt.Println("Evaluador principal");
+        default:
+            fmt.Println("Otro evaluador");
+    }
+}
+
+func main() {
+    ejecutar();
+}

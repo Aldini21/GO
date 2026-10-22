@@ -15,9 +15,6 @@ parser code {:
 
     private boolean huboErrores = false;
 
-    private java.util.Map<String, Integer> parametrosMetodos =
-        new java.util.HashMap<String, Integer>();
-
     /* ACTIVIDAD 9 - TABLA DE SIMBOLOS */
     private TablaSimbolos tabla = new TablaSimbolos();
 
@@ -68,28 +65,6 @@ parser code {:
             + " | Causa: " + causa
         );
         huboErrores = true;
-    }
-
-    private void validarCantidadArgumentos(
-            String nombre,
-            int cantidadArgumentos,
-            int linea,
-            int columna) {
-
-        Integer cantidadParametros = parametrosMetodos.get(nombre);
-
-        if (cantidadParametros != null
-                && cantidadParametros != cantidadArgumentos) {
-
-            errorSintactico(
-                "el metodo " + nombre
-                + " espera " + cantidadParametros
-                + " argumento(s), pero se recibieron "
-                + cantidadArgumentos,
-                linea,
-                columna
-            );
-        }
     }
 
 :};
@@ -258,7 +233,8 @@ non terminal declaracion_struct;
 /* ACTIVIDAD 9 */
 non terminal String encabezado_struct;
 non terminal String encabezado_funcion;
-non terminal String valor_inicial;
+non terminal Simbolo valor_inicial;
+non terminal String tipo_retorno;
 non terminal atributos;
 non terminal atributo;
 
@@ -271,16 +247,16 @@ non terminal Integer lista_parametros;
 non terminal parametro;
 non terminal retorno;
 non terminal llamada_metodo;
-non terminal String llamada_metodo_expr;
-non terminal Integer argumentos_optativos;
-non terminal Integer lista_argumentos;
-non terminal argumento;
+non terminal Simbolo llamada_metodo_expr;
+non terminal java.util.ArrayList argumentos_optativos;
+non terminal java.util.ArrayList lista_argumentos;
+non terminal Simbolo argumento;
 
 non terminal sentencias;
 non terminal sentencia;
 
 non terminal String tipo;
-non terminal String valor;
+non terminal Simbolo valor;
 
 /* ACTIVIDAD 6 */
 non terminal lectura;
@@ -289,13 +265,14 @@ non terminal escritura;
 non terminal lista_elementos;
 non terminal elemento;
 non terminal asignacion;
-non terminal String expresion;
+non terminal Simbolo expresion;
 
 /* ACTIVIDAD 7 */
 non terminal seleccion_if;
 non terminal condicion_if;
 non terminal bloque_control;
 non terminal seleccion_switch;
+non terminal encabezado_switch;
 non terminal lista_casos;
 non terminal caso_switch;
 non terminal default_switch;
@@ -432,8 +409,10 @@ declaracion ::=
    ========================================================= */
 
 ciclo_for_condicion ::=
-        FOR expresion bloque_control
+        FOR expresion:e bloque_control
         {:
+            tabla.verificarCondicion(e, "for");
+
             System.out.println(
                 "Regla reconocida: ciclo_for_condicion"
             );
@@ -441,8 +420,10 @@ ciclo_for_condicion ::=
 ;
 
 ciclo_for_controlado ::=
-        FOR asignacion_for PUNTO_COMA expresion PUNTO_COMA actualizacion_for bloque_control
+        FOR asignacion_for PUNTO_COMA expresion:e PUNTO_COMA actualizacion_for bloque_control
         {:
+            tabla.verificarCondicion(e, "for");
+
             System.out.println(
                 "Regla reconocida: ciclo_for_controlado"
             );
@@ -474,7 +455,7 @@ actualizacion_for ::=
         |
         ID:id INCREMENTO
         {:
-            tabla.verificarDeclarado(id, idleft, idright);
+            tabla.verificarIncremento(id, "++", idleft, idright);
 
             System.out.println(
                 "Incremento de control de for reconocido: " + id + "++"
@@ -483,7 +464,7 @@ actualizacion_for ::=
         |
         ID:id DECREMENTO
         {:
-            tabla.verificarDeclarado(id, idleft, idright);
+            tabla.verificarIncremento(id, "--", idleft, idright);
 
             System.out.println(
                 "Decremento de control de for reconocido: " + id + "--"
@@ -539,7 +520,8 @@ declaracion_variable ::=
 
         VAR ID:nombre tipo:t IGUAL valor_inicial:v PUNTO_COMA
         {:
-            tabla.declarar(nombre, Simbolo.VARIABLE, t, v, nombreleft, nombreright);
+            tabla.declarar(nombre, Simbolo.VARIABLE, t, v.getValor(), nombreleft, nombreright);
+            tabla.verificarAsignacion(nombre, t, v);
 
             System.out.println(
                 "Declaracion de variable con inicializacion reconocida: "
@@ -574,12 +556,15 @@ declaracion_variable ::=
             int totalValores = valores.size() + 1;
 
             if (totalIds == totalValores) {
-                tabla.declarar(nombre, Simbolo.VARIABLE, t, v, nombreleft, nombreright);
+                tabla.declarar(nombre, Simbolo.VARIABLE, t, v.getValor(), nombreleft, nombreright);
+                tabla.verificarAsignacion(nombre, t, v);
 
                 for (int i = 0; i < ids.size(); i++) {
                     Object[] id = (Object[]) ids.get(i);
+                    Simbolo vi = (Simbolo) valores.get(i);
                     tabla.declarar((String) id[0], Simbolo.VARIABLE, t,
-                        (String) valores.get(i), (Integer) id[1], (Integer) id[2]);
+                        vi.getValor(), (Integer) id[1], (Integer) id[2]);
+                    tabla.verificarAsignacion((String) id[0], t, vi);
                 }
 
                 System.out.println(
@@ -658,16 +643,11 @@ lista_valores_declaracion ::=
 
 
 /* ACTIVIDAD 9: valor inicial de una declaracion simple.
-   Permite expresiones como: var suma int = a + b; */
+   Permite expresiones como: var suma int = a + b;
+   Las cadenas y caracteres ahora son parte de 'expresion'. */
 valor_inicial ::=
         expresion:e
         {: RESULT = e; :}
-        |
-        CADENA:c
-        {: RESULT = c; :}
-        |
-        CARACTER:c
-        {: RESULT = c; :}
 ;
 
 
@@ -678,7 +658,8 @@ valor_inicial ::=
 declaracion_constante ::=
         CONST ID:nombre tipo:t IGUAL valor_inicial:v PUNTO_COMA
         {:
-            tabla.declarar(nombre, Simbolo.CONSTANTE, t, v, nombreleft, nombreright);
+            tabla.declarar(nombre, Simbolo.CONSTANTE, t, v.getValor(), nombreleft, nombreright);
+            tabla.verificarAsignacion(nombre, t, v);
 
             System.out.println(
                 "Declaracion de constante reconocida: " + nombre
@@ -795,10 +776,9 @@ encabezado_funcion ::=
 ;
 
 funcion ::=
-        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos:cantidad PARENTESIS_CIERRA
+        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos PARENTESIS_CIERRA
         LLAVE_ABRE sentencias LLAVE_CIERRA
         {:
-            parametrosMetodos.put(nombre, cantidad);
             tabla.cerrarAmbito();
 
             if ("main".equals(nombre)) {
@@ -808,11 +788,9 @@ funcion ::=
             }
         :}
         |
-        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos:cantidad PARENTESIS_CIERRA tipo:t
+        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos PARENTESIS_CIERRA tipo_retorno
         LLAVE_ABRE sentencias LLAVE_CIERRA
         {:
-            parametrosMetodos.put(nombre, cantidad);
-            tabla.buscarEnAmbito(TablaSimbolos.GLOBAL, nombre).setTipodato(t);
             tabla.cerrarAmbito();
 
             System.out.println("Regla reconocida: metodo_con_retorno -> " + nombre);
@@ -828,6 +806,16 @@ funcion ::=
                 llaveleft,
                 llaveright
             );
+        :}
+;
+
+/* ACTIVIDAD 9: el tipo de retorno se registra antes de leer el
+   cuerpo, asi cada 'return' se puede comparar con el. */
+tipo_retorno ::=
+        tipo:t
+        {:
+            tabla.establecerTipoRetorno(t);
+            RESULT = t;
         :}
 ;
 
@@ -871,12 +859,15 @@ parametro ::=
         ID:nombre tipo:t
         {:
             tabla.declarar(nombre, Simbolo.VARIABLE, t, "N/A (Parametro)", nombreleft, nombreright);
+            tabla.agregarParametro(tabla.getAmbitoActual(), t);
 
             System.out.println("Parametro reconocido: " + nombre);
         :}
         |
         ID:nombre
         {:
+            tabla.agregarParametro(tabla.getAmbitoActual(), null);
+
             errorSintactico(
                 "falta el tipo del parametro " + nombre,
                 nombreleft,
@@ -887,14 +878,11 @@ parametro ::=
 
 
 retorno ::=
-        RETURN expresion PUNTO_COMA
-        {: System.out.println("Regla reconocida: retorno"); :}
-        |
-        RETURN CADENA PUNTO_COMA
-        {: System.out.println("Regla reconocida: retorno"); :}
-        |
-        RETURN CARACTER PUNTO_COMA
-        {: System.out.println("Regla reconocida: retorno"); :}
+        RETURN valor_inicial:e PUNTO_COMA
+        {:
+            tabla.verificarRetorno(e);
+            System.out.println("Regla reconocida: retorno");
+        :}
         |
         RETURN:ret PUNTO_COMA
         {:
@@ -907,16 +895,9 @@ retorno ::=
 ;
 
 llamada_metodo ::=
-        ID:nombre PARENTESIS_ABRE argumentos_optativos:cantidad PARENTESIS_CIERRA PUNTO_COMA
+        ID:nombre PARENTESIS_ABRE argumentos_optativos:args PARENTESIS_CIERRA PUNTO_COMA
         {:
-            tabla.registrarLlamada(nombre, nombreleft, nombreright);
-
-            validarCantidadArgumentos(
-                nombre,
-                cantidad,
-                nombreleft,
-                nombreright
-            );
+            tabla.registrarLlamada(nombre, args, nombreleft, nombreright);
 
             System.out.println(
                 "Regla reconocida: llamada_metodo -> " + nombre
@@ -934,17 +915,10 @@ llamada_metodo ::=
 ;
 
 llamada_metodo_expr ::=
-        ID:nombre PARENTESIS_ABRE argumentos_optativos:cantidad PARENTESIS_CIERRA
+        ID:nombre PARENTESIS_ABRE argumentos_optativos:args PARENTESIS_CIERRA
         {:
-            tabla.registrarLlamada(nombre, nombreleft, nombreright);
-            RESULT = nombre + "()";
-
-            validarCantidadArgumentos(
-                nombre,
-                cantidad,
-                nombreleft,
-                nombreright
-            );
+            tabla.registrarLlamada(nombre, args, nombreleft, nombreright);
+            RESULT = tabla.tipoLlamada(nombre, nombreleft, nombreright);
 
             System.out.println(
                 "Llamada a metodo dentro de expresion reconocida: " + nombre
@@ -964,7 +938,7 @@ llamada_metodo_expr ::=
                 + nombre
             );
 
-            RESULT = nombre + "()";
+            RESULT = TablaSimbolos.nuevaExpresion(nombre + "()", null, false, nombreleft, nombreright);
         :}
         |
         ID:nombre PARENTESIS_ABRE argumentos_optativos PUNTO_COMA:pc
@@ -980,37 +954,40 @@ llamada_metodo_expr ::=
                 + nombre
             );
 
-            RESULT = nombre + "()";
+            RESULT = TablaSimbolos.nuevaExpresion(nombre + "()", null, false, nombreleft, nombreright);
         :}
 ;
 
 argumentos_optativos ::=
-        lista_argumentos:cantidad
+        lista_argumentos:lista
         {:
-            RESULT = cantidad;
+            RESULT = lista;
         :}
         |
         {:
-            RESULT = 0;
+            RESULT = new java.util.ArrayList();
         :}
 ;
 
 lista_argumentos ::=
-        argumento
+        argumento:a
         {:
-            RESULT = 1;
+            RESULT = new java.util.ArrayList();
+            RESULT.add(a);
             System.out.println("Regla reconocida: lista_argumentos");
         :}
         |
-        lista_argumentos:cantidad COMA argumento
+        lista_argumentos:lista COMA argumento:a
         {:
-            RESULT = cantidad + 1;
+            lista.add(a);
+            RESULT = lista;
             System.out.println("Regla reconocida: lista_argumentos");
         :}
         |
-        lista_argumentos:cantidad COMA COMA:comaDuplicada argumento
+        lista_argumentos:lista COMA COMA:comaDuplicada argumento:a
         {:
-            RESULT = cantidad + 1;
+            lista.add(a);
+            RESULT = lista;
 
             errorSintactico(
                 "coma duplicada en la lista de argumentos",
@@ -1021,11 +998,8 @@ lista_argumentos ::=
 ;
 
 argumento ::=
-        expresion
-        |
-        CADENA
-        |
-        CARACTER
+        expresion:e
+        {: RESULT = e; :}
 ;
 
 /* =========================================================
@@ -1090,7 +1064,10 @@ seleccion_if ::=
 ;
 
 condicion_if ::=
-        expresion
+        expresion:e
+        {:
+            tabla.verificarCondicion(e, "if");
+        :}
         |
         error
         {:
@@ -1112,14 +1089,32 @@ bloque_control ::=
    ========================================================= */
 
 seleccion_switch ::=
-        SWITCH expresion LLAVE_ABRE lista_casos default_switch LLAVE_CIERRA
-        {: System.out.println("Regla reconocida: seleccion_multiple (switch)"); :}
+        encabezado_switch lista_casos default_switch LLAVE_CIERRA
+        {:
+            tabla.cerrarSwitch();
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
         |
-        SWITCH expresion LLAVE_ABRE lista_casos LLAVE_CIERRA
-        {: System.out.println("Regla reconocida: seleccion_multiple (switch)"); :}
+        encabezado_switch lista_casos LLAVE_CIERRA
+        {:
+            tabla.cerrarSwitch();
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
         |
-        SWITCH expresion LLAVE_ABRE default_switch LLAVE_CIERRA
-        {: System.out.println("Regla reconocida: seleccion_multiple (switch)"); :}
+        encabezado_switch default_switch LLAVE_CIERRA
+        {:
+            tabla.cerrarSwitch();
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
+;
+
+/* ACTIVIDAD 9: se guarda el tipo del valor evaluado para
+   compararlo con cada 'case'. */
+encabezado_switch ::=
+        SWITCH expresion:e LLAVE_ABRE
+        {:
+            tabla.abrirSwitch(e);
+        :}
 ;
 
 lista_casos ::=
@@ -1129,8 +1124,11 @@ lista_casos ::=
 ;
 
 caso_switch ::=
-        CASE expresion DOS_PUNTOS sentencias
-        {: System.out.println("Regla reconocida: case"); :}
+        CASE expresion:e DOS_PUNTOS sentencias
+        {:
+            tabla.verificarCaso(e);
+            System.out.println("Regla reconocida: case");
+        :}
         |
         CASE:cas DOS_PUNTOS sentencias
         {:
@@ -1257,10 +1255,6 @@ lista_elementos ::=
 ;
 
 elemento ::=
-        CADENA
-        |
-        CARACTER
-        |
         expresion
 ;
 
@@ -1270,7 +1264,7 @@ elemento ::=
    ========================================================= */
 
 asignacion ::=
-        ID:nombre IGUAL expresion:e PUNTO_COMA
+        ID:nombre IGUAL valor_inicial:e PUNTO_COMA
         {:
             tabla.actualizarValor(nombre, e, nombreleft, nombreright);
 
@@ -1339,113 +1333,123 @@ asignacion ::=
         :}
 ;
 
+/* ACTIVIDAD 9: cada expresion regresa su texto y su tipo de dato. */
 expresion ::=
         llamada_metodo_expr:e
         {: RESULT = e; :}
         |
         ID:id
         {:
-            tabla.verificarDeclarado(id, idleft, idright);
-            RESULT = id;
+            RESULT = tabla.tipoIdentificador(id, idleft, idright);
         :}
         |
         NUMERO:n
-        {: RESULT = n; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "int", true, nleft, nright); :}
         |
         NUMERO_DECIMAL:n
-        {: RESULT = n; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "float64", true, nleft, nright); :}
         |
-        TRUE
-        {: RESULT = "true"; :}
+        CADENA:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "string", true, cleft, cright); :}
         |
-        FALSE
-        {: RESULT = "false"; :}
+        CARACTER:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "rune", true, cleft, cright); :}
         |
-        PARENTESIS_ABRE expresion:e PARENTESIS_CIERRA
-        {: RESULT = "(" + e + ")"; :}
+        TRUE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("true", "bool", true, vleft, vright); :}
         |
-        NOT expresion:e
+        FALSE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("false", "bool", true, vleft, vright); :}
+        |
+        PARENTESIS_ABRE:p expresion:e PARENTESIS_CIERRA
+        {:
+            RESULT = TablaSimbolos.nuevaExpresion(
+                "(" + e.getValor() + ")", e.getTipodato(), TablaSimbolos.esLiteral(e), pleft, pright
+            );
+        :}
+        |
+        NOT:n expresion:e
         {:
             System.out.println("Expresion logica con ! reconocida");
-            RESULT = "!" + e;
+            RESULT = tabla.negacion(e, nleft, nright);
         :}
         |
         expresion:a SUMA expresion:b
         {:
             System.out.println("Expresion aritmetica con + reconocida");
-            RESULT = a + " + " + b;
+            RESULT = tabla.operacionBinaria(a, "+", b);
         :}
         |
         expresion:a RESTA expresion:b
         {:
             System.out.println("Expresion aritmetica con - reconocida");
-            RESULT = a + " - " + b;
+            RESULT = tabla.operacionBinaria(a, "-", b);
         :}
         |
         expresion:a MULTIPLICACION expresion:b
         {:
             System.out.println("Expresion aritmetica con * reconocida");
-            RESULT = a + " * " + b;
+            RESULT = tabla.operacionBinaria(a, "*", b);
         :}
         |
         expresion:a DIVISION expresion:b
         {:
             System.out.println("Expresion aritmetica con / reconocida");
-            RESULT = a + " / " + b;
+            RESULT = tabla.operacionBinaria(a, "/", b);
         :}
         |
         expresion:a MODULO expresion:b
         {:
             System.out.println("Expresion aritmetica con % reconocida");
-            RESULT = a + " % " + b;
+            RESULT = tabla.operacionBinaria(a, "%", b);
         :}
         |
         expresion:a MENOR expresion:b
         {:
             System.out.println("Condicion relacional con < reconocida");
-            RESULT = a + " < " + b;
+            RESULT = tabla.operacionBinaria(a, "<", b);
         :}
         |
         expresion:a MAYOR expresion:b
         {:
             System.out.println("Condicion relacional con > reconocida");
-            RESULT = a + " > " + b;
+            RESULT = tabla.operacionBinaria(a, ">", b);
         :}
         |
         expresion:a MENOR_IGUAL expresion:b
         {:
             System.out.println("Condicion relacional con <= reconocida");
-            RESULT = a + " <= " + b;
+            RESULT = tabla.operacionBinaria(a, "<=", b);
         :}
         |
         expresion:a MAYOR_IGUAL expresion:b
         {:
             System.out.println("Condicion relacional con >= reconocida");
-            RESULT = a + " >= " + b;
+            RESULT = tabla.operacionBinaria(a, ">=", b);
         :}
         |
         expresion:a IGUAL_IGUAL expresion:b
         {:
             System.out.println("Condicion relacional con == reconocida");
-            RESULT = a + " == " + b;
+            RESULT = tabla.operacionBinaria(a, "==", b);
         :}
         |
         expresion:a DIFERENTE expresion:b
         {:
             System.out.println("Condicion relacional con != reconocida");
-            RESULT = a + " != " + b;
+            RESULT = tabla.operacionBinaria(a, "!=", b);
         :}
         |
         expresion:a AND expresion:b
         {:
             System.out.println("Expresion logica con && reconocida");
-            RESULT = a + " && " + b;
+            RESULT = tabla.operacionBinaria(a, "&&", b);
         :}
         |
         expresion:a OR expresion:b
         {:
             System.out.println("Expresion logica con || reconocida");
-            RESULT = a + " || " + b;
+            RESULT = tabla.operacionBinaria(a, "||", b);
         :}
 ;
 
@@ -1517,20 +1521,20 @@ tipo ::=
 
 valor ::=
         NUMERO:n
-        {: RESULT = n; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "int", true, nleft, nright); :}
         |
         NUMERO_DECIMAL:n
-        {: RESULT = n; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "float64", true, nleft, nright); :}
         |
         CADENA:c
-        {: RESULT = c; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "string", true, cleft, cright); :}
         |
         CARACTER:c
-        {: RESULT = c; :}
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "rune", true, cleft, cright); :}
         |
-        TRUE
-        {: RESULT = "true"; :}
+        TRUE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("true", "bool", true, vleft, vright); :}
         |
-        FALSE
-        {: RESULT = "false"; :}
+        FALSE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("false", "bool", true, vleft, vright); :}
 ;

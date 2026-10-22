@@ -1,0 +1,66 @@
+package main;
+import "fmt";
+
+/* Actividad 10: errores semanticos de tipos */
+
+const LIMITE int = 100;
+var contador int = 5;
+var bandera bool = false;
+var factor float64 = 2.5;
+
+type Evaluador struct {
+    nombre string;
+    intentos int;
+}
+
+func ejecutar() {
+    var a int = 0;
+    var b bool = true;
+    var texto string = "hola";
+    var evaluador Evaluador = Evaluador{};
+
+    // Error 1: asignacion incompatible
+    a = "Hola mundo";
+
+    // Error 2: operacion aritmetica con booleano
+    contador = bandera * 10;
+
+    // Error 3: condicion con expresion entera
+    if contador + 5 {
+        fmt.Println("Error");
+    }
+
+    // Error 4: reasignacion a constante
+    LIMITE = 200;
+
+    // Error 5: uso de variable no declarada
+    a = variableInexistente + 2;
+
+    // Error 6: en Go una variable int no se combina con una float64
+    a = contador + factor;
+
+    // Error 7: resta con string
+    a = texto - 1;
+
+    // Error 8: operadores logicos con valores que no son bool
+    b = contador && b;
+    b = !texto;
+
+    // Error 9: comparacion de bool con <
+    b = b < true;
+
+    // Error 10: atributo con tipo incorrecto
+    evaluador.intentos = "tres";
+
+    // Error 11: atributo que no existe en el struct
+    evaluador.edad = 20;
+
+    // Error 12: condicion del for que no es bool
+    for a {
+        break;
+    }
+}
+
+func main() {
+    ejecutar();
+}

@@ -36,7 +36,7 @@ func procesar(limite int) {
 func main() {
     var resultado int = 0;
     var nombreAlumno string = "Ana";
-
+   
     registrar();
     resultado = calcularPromedio(90, MAX_CALIFICACION);
     fmt.Println(nombreAlumno, resultado);

@@ -1,0 +1,36 @@
+package main;
+import "fmt";
+
+/* Actividad 10: codigo valido mezclado con errores */
+
+const PI float64 = 3.1416;
+var radio float64 = 2.0;
+
+type Circulo struct {
+    nombre string;
+    area float64;
+}
+
+func calcularArea(r float64) float64 {
+    return PI * r * r;
+}
+
+func main() {
+    var area float64 = calcularArea(radio);
+    var veces int = 3;
+    var circulo Circulo = Circulo{};
+    var valido bool = area > 10.5;
+
+    circulo.nombre = "Circulo 1";
+    circulo.area = area;
+    circulo.area = veces;
+    area = calcularArea(veces);
+    valido = area;
+    PI = 3.14;
+
+    if valido && veces > 0 {
+        fmt.Println(circulo.nombre, circulo.area);
+    }
+
+    fmt.Println("Area:", area * veces);
+}
