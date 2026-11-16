@@ -1,0 +1,21 @@
+package main;
+import "fmt";
+
+/* Actividad 12: programa mixto */
+
+func promedio(suma float64, cantidad float64) float64 {
+    return suma / cantidad;
+}
+
+func main() {
+    var precio float64 = 10.5;
+    var cantidad int = 3;
+    var total float64 = precio * 2;
+    var media float64 = promedio(total, 2.0);
+    var activo bool = media > 5.0 && cantidad != 0;
+
+    total = precio * cantidad;
+    media = total / 0.0;
+    cantidad++;
+    fmt.Println(total, media, activo);
+}
