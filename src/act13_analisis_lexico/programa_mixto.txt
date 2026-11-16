@@ -1,0 +1,38 @@
+package main;
+import "fmt";
+
+/* Actividad 13: programa mixto */
+
+type Contador struct {
+    valor int;
+}
+
+func (c *Contador) incrementar(cantidad int) {
+    c.valor = c.valor + cantidad;
+}
+
+func main() {
+    var c Contador = Contador{};
+    var total int = 0;
+
+    for k := 0; k < 3; k++ {
+        if k == 1 {
+            continue;
+        }
+        c.incrementar(k);
+        total = total + k;
+    }
+
+    if total > 2 {
+        fmt.Println("mayor");
+    } else if total == 2 {
+        fmt.Println("igual");
+    } else {
+        fmt.Println("menor");
+    }
+
+    if total {
+        total = 0;
+    }
+    c.incrementar("dos");
+}

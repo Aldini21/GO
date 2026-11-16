@@ -1,0 +1,68 @@
+package main;
+import "fmt";
+
+/* Actividad 13: programa valido (codigo intermedio de control de flujo) */
+
+type Persona struct {
+    edad int;
+}
+
+func (p *Persona) celebrarCumpleanos() {
+    p.edad = p.edad + 1;
+}
+
+func suma(a int, b int) int {
+    return a + b;
+}
+
+func main() {
+    var x int = 8;
+    var y int = 3;
+    var z int = 0;
+    var n int = 2;
+    var i int = 0;
+    var sum int = 0;
+    var count int = 0;
+    var result string = "Ninguno";
+
+    // if - else
+    if x > y {
+        z = x;
+    } else {
+        z = y;
+    }
+
+    // switch
+    switch n {
+        case 1:
+            result = "Uno";
+        case 2:
+            result = "Dos";
+        default:
+            result = "Otro";
+    }
+
+    // while (en Go: for con condicion)
+    for i < 10 {
+        i = i + 1;
+    }
+
+    // for
+    for j := 0; j < 5; j++ {
+        sum = sum + j;
+    }
+
+    // do-while (en Go: for infinito con break al final)
+    for {
+        count = count + 1;
+        if !(count < 10) {
+            break;
+        }
+    }
+
+    // metodos y objetos
+    z = suma(5, 3);
+    var p Persona = Persona{};
+    p.celebrarCumpleanos();
+    fmt.Println(z, result, sum, count);
+}
