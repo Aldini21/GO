@@ -1,0 +1,40 @@
+package main;
+import "fmt";
+
+/* Actividad 11: programa valido */
+
+type Calculadora struct {
+    base int;
+}
+
+func (c Calculadora) sumar(a int, b int) int {
+    return a + b + c.base;
+}
+
+func clasificar(n int) string {
+    if n > 10 {
+        return "alto";
+    } else {
+        return "bajo";
+    }
+}
+
+func main() {
+    var calc Calculadora = Calculadora{};
+    var total int = calc.sumar(10, 20);
+
+    for i := 0; i < 5; i++ {
+        if i == 1 {
+            continue;
+        }
+        if i == 4 {
+            break;
+        }
+        total = total + i;
+    }
+
+    {
+        var local int = 5;
+        fmt.Println(clasificar(total + local));
+    }
+}

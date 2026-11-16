@@ -1,0 +1,41 @@
+package main;
+import "fmt";
+
+/* Actividad 11: programa con errores */
+
+type Calculadora struct {
+    base int;
+}
+
+func sumar(a int, b int) int {
+    return a + b;
+}
+
+func obtenerEdad() int {
+    return "veinticinco";
+}
+
+func sinRetorno(n int) int {
+    if n > 0 {
+        return 1;
+    }
+}
+
+func main() {
+    var resultado int = 0;
+    var calc Calculadora = Calculadora{};
+
+    if resultado {
+        fmt.Println("Error");
+    }
+    resultado = sumar(10);
+    resultado = sumar("Hola", 20);
+    resultado = multiplicar(2, 3);
+    break;
+    {
+        var valorLocal int = 1;
+    }
+    resultado = valorLocal;
+    resultado = calc.limite;
+    var resultado int = 5;
+}

@@ -1,0 +1,1815 @@
+/*
+NOMBRES COMPLETOS
+
+*/
+
+package act11_analisis_lexico;
+
+import java_cup.runtime.Symbol;
+
+/* =========================================================
+   CODIGO DEL PARSER
+   ========================================================= */
+
+parser code {:
+
+    private boolean huboErrores = false;
+
+    /* ACTIVIDAD 10: cantidad de errores sintacticos para el reporte final. */
+    private int erroresSintacticos = 0;
+
+    /* ACTIVIDAD 9 - TABLA DE SIMBOLOS */
+    private TablaSimbolos tabla = new TablaSimbolos();
+
+    public TablaSimbolos getTablaSimbolos() {
+        return tabla;
+    }
+
+    public boolean getHuboErrores() {
+        return huboErrores;
+    }
+
+    @Override
+    public void report_error(String message, Object info) {
+
+        huboErrores = true;
+        erroresSintacticos++;
+
+        if (info instanceof Symbol) {
+
+            Symbol s = (Symbol) info;
+
+            System.out.println(
+                "[ERROR SINTACTICO] Linea: " + s.left
+                + ", Columna: " + s.right
+                + " | Cerca de: " + s.value
+            );
+
+        } else {
+
+            System.out.println(
+                "[ERROR SINTACTICO] " + message
+            );
+        }
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info)
+            throws Exception {
+
+        huboErrores = true;
+
+        report_error(message, info);
+        erroresSintacticos--;
+    }
+
+    private void errorSintactico(String causa, int linea, int columna) {
+        System.out.println(
+            "[ERROR SINTACTICO] Linea: " + linea
+            + ", Columna: " + columna
+            + " | Causa: " + causa
+        );
+        huboErrores = true;
+        erroresSintacticos++;
+    }
+
+:};
+
+
+/* =========================================================
+   TERMINALES GENERALES
+   ========================================================= */
+
+terminal PACKAGE;
+terminal IMPORT;
+terminal FUNC;
+terminal VAR;
+terminal CONST;
+terminal TYPE;
+terminal STRUCT;
+
+
+/* =========================================================
+   PALABRAS RESERVADAS CONSERVADAS DE ACTIVIDAD 2
+   ========================================================= */
+
+terminal BREAK;
+terminal DEFAULT;
+terminal INTERFACE;
+terminal SELECT;
+
+terminal CASE;
+terminal DEFER;
+terminal GO;
+terminal MAP;
+
+terminal CHAN;
+terminal ELSE;
+terminal GOTO;
+terminal SWITCH;
+
+terminal FALLTHROUGH;
+terminal IF;
+terminal RANGE;
+
+terminal CONTINUE;
+terminal FOR;
+terminal RETURN;
+
+
+/* =========================================================
+   TIPOS DE DATOS
+   ========================================================= */
+
+terminal INT;
+terminal FLOAT32;
+terminal FLOAT64;
+terminal STRING;
+terminal BOOL;
+terminal BYTE;
+terminal RUNE;
+
+
+/* =========================================================
+   BOOLEANOS
+   ========================================================= */
+
+terminal TRUE;
+terminal FALSE;
+
+
+/* =========================================================
+   IDENTIFICADORES Y LITERALES
+   ========================================================= */
+
+terminal String ID;
+terminal String NUMERO;
+terminal String NUMERO_DECIMAL;
+terminal String CADENA;
+terminal String CARACTER;
+
+
+/* =========================================================
+   OPERADORES ARITMETICOS
+   ========================================================= */
+
+terminal SUMA;
+terminal RESTA;
+terminal MULTIPLICACION;
+terminal DIVISION;
+terminal MODULO;
+
+/* =========================================
+   SENTENCIAS DE INCREMENTO/DECREMENTO
+   Actividad 8 - MEJORA
+   ========================================= */
+
+terminal INCREMENTO, DECREMENTO;
+
+/* =========================================================
+   OPERADORES RELACIONALES
+   ACTIVIDAD 2
+   ========================================================= */
+
+terminal MENOR;
+terminal MAYOR;
+terminal MENOR_IGUAL;
+terminal MAYOR_IGUAL;
+terminal IGUAL_IGUAL;
+terminal DIFERENTE;
+
+
+/* =========================================================
+   OPERADORES LOGICOS
+   ACTIVIDAD 2
+   ========================================================= */
+
+terminal AND;
+terminal OR;
+terminal NOT;
+
+
+/* =========================================================
+   ASIGNACION
+   ========================================================= */
+
+terminal IGUAL;
+
+/* ACTIVIDAD 11: declaracion corta x := valor */
+terminal DECLARACION_CORTA;
+
+
+/* =========================================================
+   SIMBOLOS
+   ========================================================= */
+
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+
+terminal CORCHETE_ABRE;
+terminal CORCHETE_CIERRA;
+
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+
+terminal COMA;
+terminal PUNTO_COMA;
+terminal DOS_PUNTOS;
+terminal PUNTO;
+terminal AMPERSAND;
+
+
+/* =========================================================
+   NO TERMINALES
+   ========================================================= */
+
+non terminal programa;
+
+non terminal paquete;
+non terminal importaciones;
+non terminal importacion;
+
+non terminal declaraciones;
+non terminal declaracion;
+
+non terminal declaracion_variable;
+non terminal java.util.ArrayList lista_ids_declaracion;
+non terminal java.util.ArrayList lista_valores_declaracion;
+non terminal declaracion_constante;
+
+non terminal declaracion_struct;
+
+/* ACTIVIDAD 9 */
+non terminal String encabezado_struct;
+non terminal String encabezado_funcion;
+non terminal Simbolo valor_inicial;
+non terminal String tipo_retorno;
+non terminal atributos;
+non terminal atributo;
+
+/* ACTIVIDAD 8 */
+non terminal elementos_globales;
+non terminal elemento_global;
+non terminal funcion;
+non terminal Integer parametros_optativos;
+non terminal Integer lista_parametros;
+non terminal parametro;
+non terminal retorno;
+non terminal llamada_metodo;
+non terminal Simbolo llamada_metodo_expr;
+non terminal java.util.ArrayList argumentos_optativos;
+non terminal java.util.ArrayList lista_argumentos;
+non terminal Simbolo argumento;
+
+non terminal Boolean sentencias;
+non terminal Boolean sentencia;
+
+non terminal String tipo;
+non terminal Simbolo valor;
+
+/* ACTIVIDAD 6 */
+non terminal lectura;
+non terminal lista_lectura;
+non terminal escritura;
+non terminal java.util.ArrayList lista_elementos;
+non terminal Simbolo elemento;
+non terminal asignacion;
+non terminal Simbolo expresion;
+
+/* ACTIVIDAD 7 */
+non terminal Boolean seleccion_if;
+non terminal condicion_if;
+non terminal Boolean bloque_control;
+non terminal Boolean seleccion_switch;
+non terminal encabezado_switch;
+non terminal Boolean lista_casos;
+non terminal Boolean caso_switch;
+non terminal Boolean default_switch;
+non terminal ciclo_for_condicion;
+non terminal ciclo_for_controlado;
+non terminal asignacion_for;
+non terminal actualizacion_for;
+non terminal Boolean ciclo_for_infinito;
+non terminal sentencia_break;
+
+/* ACTIVIDAD 11
+   Las sentencias regresan Boolean: true si son "terminales"
+   (despues de ellas el metodo ya no continua), para revisar que
+   un metodo con tipo de retorno siempre devuelva un valor. */
+non terminal inicio_for;
+non terminal inicio_bloque;
+non terminal encabezado_caso;
+non terminal encabezado_default;
+non terminal sentencia_continue;
+non terminal declaracion_corta;
+non terminal incremento;
+
+
+/* =========================================================
+   SIMBOLO INICIAL
+   ========================================================= */
+
+/* =========================================================
+   PRECEDENCIA DE EXPRESIONES - ACTIVIDAD 6
+   Igual que en Go: ! primero, luego * / %, luego + -,
+   despues && y finalmente ||.
+   ========================================================= */
+
+precedence left OR;
+precedence left AND;
+precedence left IGUAL_IGUAL, DIFERENTE;
+precedence left MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL;
+precedence left SUMA, RESTA;
+precedence left MULTIPLICACION, DIVISION, MODULO;
+precedence right NOT;
+
+start with programa;
+
+
+/* =========================================================
+   ESTRUCTURA GENERAL DEL PROGRAMA
+   ========================================================= */
+
+programa ::=
+        paquete
+        importaciones
+        elementos_globales
+        {:
+            tabla.verificarLlamadasPendientes();
+
+            /* ACTIVIDAD 10: errores de las otras fases para el reporte */
+            tabla.setErroresSintacticos(erroresSintacticos);
+            tabla.setErroresLexicos(((GoLexer) getScanner()).getErroresLexicos());
+
+            System.out.println(
+                "Estructura general del programa reconocida correctamente"
+            );
+        :}
+;
+
+
+/* =========================================================
+   PACKAGE
+   ========================================================= */
+
+paquete ::=
+        PACKAGE ID PUNTO_COMA
+        {:
+            System.out.println(
+                "Paquete reconocido correctamente"
+            );
+        :}
+
+        |
+
+        PACKAGE ID
+        {:
+            System.out.println(
+                "Error recuperable en paquete: falta ';'"
+            );
+
+            huboErrores = true;
+            erroresSintacticos++;
+        :}
+;
+
+
+/* =========================================================
+   IMPORTACIONES
+   ========================================================= */
+
+importaciones ::=
+        importaciones importacion
+        |
+;
+
+
+importacion ::=
+        IMPORT CADENA:ruta PUNTO_COMA
+        {:
+            tabla.registrarImportacion(ruta);
+
+            System.out.println(
+                "Importacion reconocida correctamente"
+            );
+        :}
+
+        |
+
+        IMPORT CADENA:ruta
+        {:
+            tabla.registrarImportacion(ruta);
+
+            System.out.println(
+                "Error recuperable en importacion: falta ';'"
+            );
+
+            huboErrores = true;
+            erroresSintacticos++;
+        :}
+;
+
+
+/* =========================================================
+   DECLARACIONES GENERALES
+   ========================================================= */
+
+declaraciones ::=
+        declaraciones declaracion
+        |
+;
+
+
+declaracion ::=
+        declaracion_variable
+        |
+        declaracion_constante
+        |
+        declaracion_struct
+;
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+
+/* =========================================================
+   ACTIVIDAD 7 - ESTRUCTURAS ITERATIVAS EN GO
+   for con condicion y for controlado
+   ========================================================= */
+
+ciclo_for_condicion ::=
+        inicio_for expresion:e bloque_control
+        {:
+            tabla.verificarCondicion(e, "for");
+            tabla.salirCiclo();
+
+            System.out.println(
+                "Regla reconocida: ciclo_for_condicion"
+            );
+        :}
+;
+
+/* ACTIVIDAD 11: al leer 'for' se abre el ambito del ciclo
+   (variables de la inicializacion) y se habilitan break/continue. */
+inicio_for ::=
+        FOR
+        {:
+            tabla.entrarCiclo();
+        :}
+;
+
+ciclo_for_controlado ::=
+        inicio_for asignacion_for PUNTO_COMA expresion:e PUNTO_COMA actualizacion_for bloque_control
+        {:
+            tabla.verificarCondicion(e, "for");
+            tabla.salirCiclo();
+
+            System.out.println(
+                "Regla reconocida: ciclo_for_controlado"
+            );
+        :}
+        |
+        inicio_for:fr asignacion_for PUNTO_COMA expresion PUNTO_COMA bloque_control
+        {:
+            tabla.salirCiclo();
+
+            errorSintactico(
+                "se esperaba la seccion de actualizacion del ciclo 'for'",
+                frleft,
+                frright
+            );
+        :}
+;
+
+asignacion_for ::=
+        ID:id IGUAL expresion:e
+        {:
+            tabla.actualizarValor(id, e, idleft, idright);
+
+            System.out.println(
+                "Asignacion de control de for reconocida: " + id
+            );
+        :}
+        |
+        ID:id DECLARACION_CORTA expresion:e
+        {:
+            /* ACTIVIDAD 11: for i := 0; ... (i solo existe en el ciclo) */
+            tabla.declaracionCorta(id, e, idleft, idright);
+
+            System.out.println(
+                "Declaracion corta de control de for reconocida: " + id
+            );
+        :}
+;
+
+actualizacion_for ::=
+        asignacion_for
+        |
+        ID:id INCREMENTO
+        {:
+            tabla.verificarIncremento(id, "++", idleft, idright);
+
+            System.out.println(
+                "Incremento de control de for reconocido: " + id + "++"
+            );
+        :}
+        |
+        ID:id DECREMENTO
+        {:
+            tabla.verificarIncremento(id, "--", idleft, idright);
+
+            System.out.println(
+                "Decremento de control de for reconocido: " + id + "--"
+            );
+        :}
+;
+
+
+/* =========================================================
+   CONTINUA GRAMATICA ANTERIOR
+   ========================================================= */
+
+
+/* =========================================================
+   ACTIVIDAD 7 - FOR INFINITO Y BREAK EN GO
+   Equivalencia para estructuras con comprobacion posterior
+   ========================================================= */
+
+ciclo_for_infinito ::=
+        inicio_for bloque_control
+        {:
+            /* ACTIVIDAD 11: un for sin condicion y sin break es terminal */
+            RESULT = !tabla.salirCiclo();
+
+            System.out.println(
+                "Regla reconocida: ciclo_for_infinito"
+            );
+        :}
+;
+
+sentencia_break ::=
+        BREAK:b PUNTO_COMA
+        {:
+            tabla.verificarBreak(bleft, bright);
+
+            System.out.println(
+                "Sentencia break reconocida correctamente"
+            );
+        :}
+;
+
+/* ACTIVIDAD 11 */
+sentencia_continue ::=
+        CONTINUE:c PUNTO_COMA
+        {:
+            tabla.verificarContinue(cleft, cright);
+
+            System.out.println(
+                "Sentencia continue reconocida correctamente"
+            );
+        :}
+;
+
+/* ACTIVIDAD 11: declaracion corta de Go, solo dentro de funciones. */
+declaracion_corta ::=
+        ID:id DECLARACION_CORTA expresion:e PUNTO_COMA
+        {:
+            tabla.declaracionCorta(id, e, idleft, idright);
+
+            System.out.println(
+                "Declaracion corta reconocida: " + id
+            );
+        :}
+;
+
+/* ACTIVIDAD 11: i++; y i--; como sentencias. */
+incremento ::=
+        ID:id INCREMENTO PUNTO_COMA
+        {:
+            tabla.verificarIncremento(id, "++", idleft, idright);
+        :}
+        |
+        ID:id DECREMENTO PUNTO_COMA
+        {:
+            tabla.verificarIncremento(id, "--", idleft, idright);
+        :}
+;
+
+
+/* =========================================================
+   CONTINUA GRAMATICA ANTERIOR
+   ========================================================= */
+
+declaracion_variable ::=
+        VAR ID:nombre tipo:t PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.VARIABLE, t, null, nombreleft, nombreright);
+
+            System.out.println(
+                "Declaracion de variable reconocida: " + nombre
+            );
+        :}
+
+        |
+
+        VAR ID:nombre tipo:t IGUAL valor_inicial:v PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.VARIABLE, t, v.getValor(), nombreleft, nombreright);
+            tabla.verificarAsignacion(nombre, t, v);
+
+            System.out.println(
+                "Declaracion de variable con inicializacion reconocida: "
+                + nombre
+            );
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:ids tipo:t PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.VARIABLE, t, null, nombreleft, nombreright);
+
+            for (Object o : ids) {
+                Object[] id = (Object[]) o;
+                tabla.declarar((String) id[0], Simbolo.VARIABLE, t, null,
+                    (Integer) id[1], (Integer) id[2]);
+            }
+
+            System.out.println(
+                "Declaracion multiple de variables reconocida: "
+                + (ids.size() + 1) + " variables"
+            );
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:ids tipo:t
+        IGUAL valor:v COMA lista_valores_declaracion:valores PUNTO_COMA
+        {:
+            int totalIds = ids.size() + 1;
+            int totalValores = valores.size() + 1;
+
+            if (totalIds == totalValores) {
+                tabla.declarar(nombre, Simbolo.VARIABLE, t, v.getValor(), nombreleft, nombreright);
+                tabla.verificarAsignacion(nombre, t, v);
+
+                for (int i = 0; i < ids.size(); i++) {
+                    Object[] id = (Object[]) ids.get(i);
+                    Simbolo vi = (Simbolo) valores.get(i);
+                    tabla.declarar((String) id[0], Simbolo.VARIABLE, t,
+                        vi.getValor(), (Integer) id[1], (Integer) id[2]);
+                    tabla.verificarAsignacion((String) id[0], t, vi);
+                }
+
+                System.out.println(
+                    "Declaracion multiple de variables con inicializacion reconocida: "
+                    + totalIds + " variables"
+                );
+            } else {
+                errorSintactico(
+                    "declaracion multiple: se declararon "
+                    + totalIds + " variables pero se proporcionaron "
+                    + totalValores + " valores",
+                    nombreleft,
+                    nombreright
+                );
+            }
+        :}
+
+        |
+
+        VAR ID:nombre COMA lista_ids_declaracion:ids tipo
+        IGUAL valor PUNTO_COMA
+        {:
+            errorSintactico(
+                "declaracion multiple: se declararon "
+                + (ids.size() + 1)
+                + " variables pero se proporciono 1 valor",
+                nombreleft,
+                nombreright
+            );
+        :}
+
+        |
+
+        VAR ID:nombre ID:tipoStruct IGUAL ID:literal LLAVE_ABRE LLAVE_CIERRA PUNTO_COMA
+        {:
+            /* ACTIVIDAD 10: variable de tipo struct */
+            tabla.declararInstancia(nombre, tipoStruct, literal,
+                nombreleft, nombreright, literalleft, literalright);
+
+            System.out.println(
+                "Declaracion de variable de tipo struct reconocida: " + nombre
+            );
+        :}
+
+        |
+
+        VAR error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error recuperable en declaracion de variable"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* Lista de identificadores para declaraciones multiples.
+   ACTIVIDAD 9: guarda id, linea y columna de cada uno. */
+lista_ids_declaracion ::=
+        ID:id
+        {:
+            RESULT = new java.util.ArrayList();
+            RESULT.add(new Object[] { id, idleft, idright });
+        :}
+        |
+        lista_ids_declaracion:lista COMA ID:id
+        {:
+            lista.add(new Object[] { id, idleft, idright });
+            RESULT = lista;
+        :}
+;
+
+
+/* Lista de valores para inicializaciones multiples. */
+lista_valores_declaracion ::=
+        valor:v
+        {:
+            RESULT = new java.util.ArrayList();
+            RESULT.add(v);
+        :}
+        |
+        lista_valores_declaracion:lista COMA valor:v
+        {:
+            lista.add(v);
+            RESULT = lista;
+        :}
+;
+
+
+/* ACTIVIDAD 9: valor inicial de una declaracion simple.
+   Permite expresiones como: var suma int = a + b;
+   Las cadenas y caracteres ahora son parte de 'expresion'. */
+valor_inicial ::=
+        expresion:e
+        {: RESULT = e; :}
+;
+
+
+/* =========================================================
+   CONSTANTES
+   ========================================================= */
+
+declaracion_constante ::=
+        CONST ID:nombre tipo:t IGUAL valor_inicial:v PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.CONSTANTE, t, v.getValor(), nombreleft, nombreright);
+            tabla.verificarAsignacion(nombre, t, v);
+
+            System.out.println(
+                "Declaracion de constante reconocida: " + nombre
+            );
+        :}
+
+        |
+
+        CONST ID:nombre tipo:t PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.CONSTANTE, t, null, nombreleft, nombreright);
+
+            huboErrores = true;
+        :}
+
+        |
+
+        CONST error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error recuperable en declaracion de constante"
+            );
+
+            huboErrores = true;
+        :}
+;
+
+
+/* =========================================================
+   STRUCT
+   ========================================================= */
+
+declaracion_struct ::=
+        encabezado_struct:nombre LLAVE_ABRE atributos LLAVE_CIERRA
+        {:
+            tabla.cerrarAmbito();
+
+            System.out.println(
+                "Struct reconocido correctamente: " + nombre
+            );
+        :}
+;
+
+
+/* ACTIVIDAD 9: al leer 'type Nombre struct' se registra la
+   clase y se abre su ambito antes de leer los atributos. */
+encabezado_struct ::=
+        TYPE ID:nombre STRUCT
+        {:
+            tabla.declarar(nombre, Simbolo.CLASE, "struct", "N/A", nombreleft, nombreright);
+            tabla.abrirAmbito(nombre);
+            RESULT = nombre;
+        :}
+;
+
+
+/* =========================================================
+   ATRIBUTOS DEL STRUCT
+   ========================================================= */
+
+atributos ::=
+        atributos atributo
+        |
+;
+
+
+atributo ::=
+        ID:nombre tipo:t
+        {:
+            tabla.declarar(nombre, Simbolo.ATRIBUTO, t, null, nombreleft, nombreright);
+
+            System.out.println(
+                "Atributo del struct reconocido: " + nombre
+            );
+        :}
+
+        |
+
+        ID:nombre tipo:t PUNTO_COMA
+        {:
+            tabla.declarar(nombre, Simbolo.ATRIBUTO, t, null, nombreleft, nombreright);
+
+            System.out.println(
+                "Atributo del struct reconocido: " + nombre
+            );
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 8 - FUNCIONES / METODOS EN GO
+   ========================================================= */
+
+elementos_globales ::=
+        elementos_globales elemento_global
+        |
+;
+
+elemento_global ::=
+        declaracion
+        |
+        funcion
+;
+
+/* ACTIVIDAD 9: al leer 'func nombre' se registra el metodo
+   y se abre su ambito antes de leer parametros y cuerpo. */
+encabezado_funcion ::=
+        FUNC ID:nombre
+        {:
+            tabla.iniciarFuncion(nombre, nombreleft, nombreright);
+            RESULT = nombre;
+        :}
+        |
+        FUNC PARENTESIS_ABRE ID:rec ID:tipoRec PARENTESIS_CIERRA ID:nombre
+        {:
+            /* ACTIVIDAD 11: metodo de un struct (receptor por valor) */
+            tabla.iniciarMetodoStruct(rec, tipoRec, nombre,
+                recleft, recright, tipoRecleft, tipoRecright,
+                nombreleft, nombreright);
+            RESULT = nombre;
+        :}
+        |
+        FUNC PARENTESIS_ABRE ID:rec MULTIPLICACION ID:tipoRec PARENTESIS_CIERRA ID:nombre
+        {:
+            /* ACTIVIDAD 11: metodo de un struct (receptor puntero) */
+            tabla.iniciarMetodoStruct(rec, tipoRec, nombre,
+                recleft, recright, tipoRecleft, tipoRecright,
+                nombreleft, nombreright);
+            RESULT = nombre;
+        :}
+;
+
+funcion ::=
+        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos PARENTESIS_CIERRA
+        LLAVE_ABRE sentencias LLAVE_CIERRA
+        {:
+            tabla.finalizarFuncion();
+
+            if ("main".equals(nombre)) {
+                System.out.println("Funcion principal reconocida correctamente");
+            } else {
+                System.out.println("Regla reconocida: metodo_sin_retorno -> " + nombre);
+            }
+        :}
+        |
+        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos PARENTESIS_CIERRA tipo_retorno
+        LLAVE_ABRE sentencias:termina LLAVE_CIERRA:fin
+        {:
+            /* ACTIVIDAD 11: el metodo debe devolver un valor en todos los caminos */
+            tabla.verificarTerminacion(termina, finleft, finright);
+            tabla.finalizarFuncion();
+
+            System.out.println("Regla reconocida: metodo_con_retorno -> " + nombre);
+        :}
+        |
+        encabezado_funcion:nombre PARENTESIS_ABRE parametros_optativos
+        LLAVE_ABRE:llave sentencias LLAVE_CIERRA
+        {:
+            tabla.finalizarFuncion();
+
+            errorSintactico(
+                "falta ')' en la definicion del metodo " + nombre,
+                llaveleft,
+                llaveright
+            );
+        :}
+;
+
+/* ACTIVIDAD 9: el tipo de retorno se registra antes de leer el
+   cuerpo, asi cada 'return' se puede comparar con el. */
+tipo_retorno ::=
+        tipo:t
+        {:
+            tabla.establecerTipoRetorno(t);
+            RESULT = t;
+        :}
+;
+
+parametros_optativos ::=
+        lista_parametros:cantidad
+        {:
+            RESULT = cantidad;
+        :}
+        |
+        {:
+            RESULT = 0;
+        :}
+;
+
+lista_parametros ::=
+        parametro
+        {:
+            RESULT = 1;
+            System.out.println("Regla reconocida: lista_parametros");
+        :}
+        |
+        lista_parametros:cantidad COMA parametro
+        {:
+            RESULT = cantidad + 1;
+            System.out.println("Regla reconocida: lista_parametros");
+        :}
+        |
+        lista_parametros:cantidad COMA COMA:comaDuplicada parametro
+        {:
+            RESULT = cantidad + 1;
+
+            errorSintactico(
+                "coma duplicada en la lista de parametros",
+                comaDuplicadaleft,
+                comaDuplicadaright
+            );
+        :}
+;
+
+parametro ::=
+        ID:nombre tipo:t
+        {:
+            tabla.declararParametro(nombre, t, nombreleft, nombreright);
+
+            System.out.println("Parametro reconocido: " + nombre);
+        :}
+        |
+        ID:nombre
+        {:
+            tabla.declararParametro(nombre, null, nombreleft, nombreright);
+
+            errorSintactico(
+                "falta el tipo del parametro " + nombre,
+                nombreleft,
+                nombreright
+            );
+        :}
+;
+
+
+retorno ::=
+        RETURN valor_inicial:e PUNTO_COMA
+        {:
+            tabla.verificarRetorno(e);
+            System.out.println("Regla reconocida: retorno");
+        :}
+        |
+        RETURN:ret PUNTO_COMA
+        {:
+            /* ACTIVIDAD 11: en Go 'return;' es valido en metodos sin retorno */
+            tabla.verificarRetornoVacio(retleft, retright);
+            System.out.println("Regla reconocida: retorno sin valor");
+        :}
+;
+
+llamada_metodo ::=
+        ID:nombre PARENTESIS_ABRE argumentos_optativos:args PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            tabla.registrarLlamada(nombre, args, nombreleft, nombreright);
+
+            System.out.println(
+                "Regla reconocida: llamada_metodo -> " + nombre
+            );
+        :}
+        |
+        ID:nombre PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "faltan los parentesis en la llamada al metodo " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+;
+
+llamada_metodo_expr ::=
+        ID:nombre PARENTESIS_ABRE argumentos_optativos:args PARENTESIS_CIERRA
+        {:
+            tabla.registrarLlamada(nombre, args, nombreleft, nombreright);
+            RESULT = tabla.tipoLlamada(nombre, nombreleft, nombreright);
+
+            System.out.println(
+                "Llamada a metodo dentro de expresion reconocida: " + nombre
+            );
+        :}
+        |
+        ID:objeto PUNTO ID:metodo PARENTESIS_ABRE argumentos_optativos:args PARENTESIS_CIERRA
+        {:
+            /* ACTIVIDAD 11: llamada a un metodo de un struct */
+            RESULT = tabla.llamadaMetodoStruct(objeto, metodo, args, true,
+                objetoleft, objetoright);
+
+            System.out.println(
+                "Llamada a metodo de struct dentro de expresion reconocida: "
+                + objeto + "." + metodo
+            );
+        :}
+        |
+        ID:nombre PARENTESIS_ABRE lista_argumentos COMA:coma PARENTESIS_CIERRA
+        {:
+            errorSintactico(
+                "falta un argumento despues de ',' en la llamada al metodo " + nombre,
+                comaleft,
+                comaright
+            );
+
+            System.out.println(
+                "Llamada a metodo dentro de expresion reconocida con recuperacion: "
+                + nombre
+            );
+
+            RESULT = TablaSimbolos.nuevaExpresion(nombre + "()", null, false, nombreleft, nombreright);
+        :}
+        |
+        ID:nombre PARENTESIS_ABRE argumentos_optativos PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "falta ')' en la llamada al metodo " + nombre,
+                pcleft,
+                pcright
+            );
+
+            System.out.println(
+                "Llamada a metodo dentro de expresion reconocida con recuperacion: "
+                + nombre
+            );
+
+            RESULT = TablaSimbolos.nuevaExpresion(nombre + "()", null, false, nombreleft, nombreright);
+        :}
+;
+
+argumentos_optativos ::=
+        lista_argumentos:lista
+        {:
+            RESULT = lista;
+        :}
+        |
+        {:
+            RESULT = new java.util.ArrayList();
+        :}
+;
+
+lista_argumentos ::=
+        argumento:a
+        {:
+            RESULT = new java.util.ArrayList();
+            RESULT.add(a);
+            System.out.println("Regla reconocida: lista_argumentos");
+        :}
+        |
+        lista_argumentos:lista COMA argumento:a
+        {:
+            lista.add(a);
+            RESULT = lista;
+            System.out.println("Regla reconocida: lista_argumentos");
+        :}
+        |
+        lista_argumentos:lista COMA COMA:comaDuplicada argumento:a
+        {:
+            lista.add(a);
+            RESULT = lista;
+
+            errorSintactico(
+                "coma duplicada en la lista de argumentos",
+                comaDuplicadaleft,
+                comaDuplicadaright
+            );
+        :}
+;
+
+argumento ::=
+        expresion:e
+        {: RESULT = e; :}
+;
+
+/* =========================================================
+   SENTENCIAS DENTRO DE MAIN
+   ========================================================= */
+
+sentencias ::=
+        sentencias sentencia:t
+        {: RESULT = t; :}
+        |
+        {: RESULT = false; :}
+;
+
+
+sentencia ::=
+        declaracion_variable
+        {: RESULT = false; :}
+        |
+        declaracion_constante
+        {: RESULT = false; :}
+        |
+        declaracion_corta
+        {: RESULT = false; :}
+        |
+        lectura
+        {: RESULT = false; :}
+        |
+        escritura
+        {: RESULT = false; :}
+        |
+        asignacion
+        {: RESULT = false; :}
+        |
+        incremento
+        {: RESULT = false; :}
+        |
+        seleccion_if:t
+        {: RESULT = t; :}
+        |
+        seleccion_switch:t
+        {: RESULT = t; :}
+        |
+        ciclo_for_condicion
+        {: RESULT = false; :}
+        |
+        ciclo_for_controlado
+        {: RESULT = false; :}
+        |
+        ciclo_for_infinito:t
+        {: RESULT = t; :}
+        |
+        sentencia_break
+        {: RESULT = false; :}
+        |
+        sentencia_continue
+        {: RESULT = false; :}
+        |
+        retorno
+        {: RESULT = true; :}
+        |
+        llamada_metodo
+        {: RESULT = false; :}
+        |
+        bloque_control:t
+        {:
+            /* ACTIVIDAD 11: bloque { } con su propio ambito */
+            RESULT = t;
+        :}
+        |
+        IGUAL:igual expresion PUNTO_COMA
+        {:
+            errorSintactico(
+                "falta identificador antes de '=' en la asignacion",
+                igualleft,
+                igualright
+            );
+            RESULT = false;
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 7 - ESTRUCTURAS SELECTIVAS EN GO
+   if simple e if-else
+   ========================================================= */
+
+seleccion_if ::=
+        IF condicion_if bloque_control
+        {:
+            RESULT = false;
+            System.out.println("Regla reconocida: seleccion_simple (if)");
+        :}
+        |
+        IF condicion_if bloque_control:a ELSE bloque_control:b
+        {:
+            RESULT = Boolean.TRUE.equals(a) && Boolean.TRUE.equals(b);
+            System.out.println("Regla reconocida: seleccion_doble (if-else)");
+        :}
+        |
+        IF condicion_if bloque_control:a ELSE seleccion_if:b
+        {:
+            /* ACTIVIDAD 11: else if */
+            RESULT = Boolean.TRUE.equals(a) && Boolean.TRUE.equals(b);
+            System.out.println("Regla reconocida: seleccion_multiple (else if)");
+        :}
+;
+
+condicion_if ::=
+        expresion:e
+        {:
+            tabla.verificarCondicion(e, "if");
+        :}
+        |
+        error
+        {:
+            System.out.println(
+                "[ERROR SINTACTICO] Causa: condicion invalida o incompleta en estructura 'if'"
+            );
+        :}
+;
+
+bloque_control ::=
+        inicio_bloque sentencias:s LLAVE_CIERRA
+        {:
+            tabla.cerrarAmbito();
+            RESULT = s;
+            System.out.println("Regla reconocida: bloque");
+        :}
+;
+
+/* ACTIVIDAD 11: cada bloque abre su propio ambito local. */
+inicio_bloque ::=
+        LLAVE_ABRE
+        {:
+            tabla.abrirBloque("bloque");
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 7 - SELECTIVA MULTIPLE EN GO
+   switch, case y default
+   ========================================================= */
+
+seleccion_switch ::=
+        encabezado_switch lista_casos:c default_switch:d LLAVE_CIERRA
+        {:
+            boolean huboBreak = tabla.cerrarSwitch();
+            /* ACTIVIDAD 11: switch terminal = con default, sin break
+               y todos sus casos terminan */
+            RESULT = !huboBreak && Boolean.TRUE.equals(c) && Boolean.TRUE.equals(d);
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
+        |
+        encabezado_switch lista_casos LLAVE_CIERRA
+        {:
+            tabla.cerrarSwitch();
+            RESULT = false;
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
+        |
+        encabezado_switch default_switch:d LLAVE_CIERRA
+        {:
+            boolean huboBreak = tabla.cerrarSwitch();
+            RESULT = !huboBreak && Boolean.TRUE.equals(d);
+            System.out.println("Regla reconocida: seleccion_multiple (switch)");
+        :}
+;
+
+/* ACTIVIDAD 9: se guarda el tipo del valor evaluado para
+   compararlo con cada 'case'. */
+encabezado_switch ::=
+        SWITCH expresion:e LLAVE_ABRE
+        {:
+            tabla.abrirSwitch(e);
+        :}
+;
+
+lista_casos ::=
+        lista_casos:a caso_switch:b
+        {: RESULT = Boolean.TRUE.equals(a) && Boolean.TRUE.equals(b); :}
+        |
+        caso_switch:b
+        {: RESULT = b; :}
+;
+
+caso_switch ::=
+        encabezado_caso sentencias:s
+        {:
+            tabla.cerrarAmbito();
+            RESULT = s;
+            System.out.println("Regla reconocida: case");
+        :}
+;
+
+/* ACTIVIDAD 11: cada case tiene su propio ambito. */
+encabezado_caso ::=
+        CASE expresion:e DOS_PUNTOS
+        {:
+            tabla.verificarCaso(e);
+            tabla.abrirBloque("case");
+        :}
+        |
+        CASE:cas DOS_PUNTOS
+        {:
+            tabla.abrirBloque("case");
+
+            errorSintactico(
+                "se esperaba un valor despues de 'case'",
+                casleft,
+                casright
+            );
+        :}
+;
+
+default_switch ::=
+        encabezado_default sentencias:s
+        {:
+            tabla.cerrarAmbito();
+            RESULT = s;
+            System.out.println("Regla reconocida: default");
+        :}
+;
+
+encabezado_default ::=
+        DEFAULT DOS_PUNTOS
+        {:
+            tabla.abrirBloque("default");
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - LECTURA EN GO
+   Equivalente a la regla 'leer' solicitada en la practica.
+   Se utiliza la sintaxis de Go: fmt.Scan(&a, &b);
+   ========================================================= */
+
+lectura ::=
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_lectura PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            /* ACTIVIDAD 11: paquete importado y nombre exportado */
+            if (!tabla.verificarPaquete(paquete, metodo, paqueteleft, paqueteright)) {
+                System.out.println("Sentencia de lectura con error semantico");
+            } else if ("fmt".equals(paquete) && "Scan".equals(metodo)) {
+                System.out.println("Sentencia de lectura reconocida correctamente");
+            } else {
+                System.out.println(
+                    "Error en lectura: se esperaba fmt.Scan(...)"
+                );
+                huboErrores = true;
+                erroresSintacticos++;
+            }
+        :}
+        |
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_lectura error PUNTO_COMA
+        {:
+            System.out.println(
+                "Error en lectura: falta ')' antes de ';'"
+            );
+            huboErrores = true;
+        :}
+;
+
+lista_lectura ::=
+        AMPERSAND ID:id
+        {:
+            tabla.verificarDeclarado(id, idleft, idright);
+        :}
+        |
+        lista_lectura COMA AMPERSAND ID:id
+        {:
+            tabla.verificarDeclarado(id, idleft, idright);
+        :}
+        |
+        lista_lectura AMPERSAND:amp ID
+        {:
+            errorSintactico(
+                "falta coma entre identificadores en la lectura",
+                ampleft,
+                ampright
+            );
+        :}
+        |
+        lista_lectura COMA COMA:comaDuplicada AMPERSAND ID
+        {:
+            errorSintactico(
+                "coma duplicada en la lista de lectura",
+                comaDuplicadaleft,
+                comaDuplicadaright
+            );
+        :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - ESCRITURA EN GO
+   Equivalente a la regla 'escribir' solicitada.
+   Se utiliza: fmt.Println(...);
+   ========================================================= */
+
+/* ACTIVIDAD 11: esta regla tambien reconoce objeto.metodo(...);
+   porque tiene la misma forma que fmt.Println(...); */
+escritura ::=
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_elementos:args PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            if (tabla.esObjeto(paquete)) {
+                tabla.llamadaMetodoStruct(paquete, metodo, args, false,
+                    paqueteleft, paqueteright);
+                System.out.println(
+                    "Regla reconocida: llamada a metodo de struct -> " + paquete + "." + metodo
+                );
+            } else if (!tabla.verificarPaquete(paquete, metodo, paqueteleft, paqueteright)) {
+                System.out.println("Sentencia de escritura con error semantico");
+            } else if ("fmt".equals(paquete) && "Println".equals(metodo)) {
+                System.out.println("Sentencia de escritura reconocida correctamente");
+            } else {
+                System.out.println(
+                    "Error en escritura: se esperaba fmt.Println(...)"
+                );
+                huboErrores = true;
+                erroresSintacticos++;
+            }
+        :}
+        |
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            if (tabla.esObjeto(paquete)) {
+                tabla.llamadaMetodoStruct(paquete, metodo, new java.util.ArrayList(), false,
+                    paqueteleft, paqueteright);
+                System.out.println(
+                    "Regla reconocida: llamada a metodo de struct -> " + paquete + "." + metodo
+                );
+            } else if (tabla.verificarPaquete(paquete, metodo, paqueteleft, paqueteright)) {
+                System.out.println("Sentencia de escritura reconocida correctamente");
+            }
+        :}
+        |
+        ID:paquete PUNTO ID:metodo
+        PARENTESIS_ABRE lista_elementos PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "falta ')' antes de ';' en la escritura",
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID PUNTO ID PARENTESIS_ABRE COMA:coma lista_elementos
+        PARENTESIS_CIERRA PUNTO_COMA
+        {:
+            errorSintactico(
+                "falta un elemento antes de la coma en la escritura",
+                comaleft,
+                comaright
+            );
+        :}
+;
+
+lista_elementos ::=
+        elemento:e
+        {:
+            RESULT = new java.util.ArrayList();
+            RESULT.add(e);
+        :}
+        |
+        lista_elementos:lista COMA elemento:e
+        {:
+            lista.add(e);
+            RESULT = lista;
+        :}
+;
+
+elemento ::=
+        expresion:e
+        {: RESULT = e; :}
+;
+
+
+/* =========================================================
+   ACTIVIDAD 6 - ASIGNACIONES Y EXPRESIONES
+   ========================================================= */
+
+asignacion ::=
+        ID:objeto PUNTO ID:campo IGUAL valor_inicial:e PUNTO_COMA
+        {:
+            /* ACTIVIDAD 10: asignacion a un atributo del struct */
+            tabla.asignarAtributo(objeto, campo, e, objetoleft, objetoright);
+
+            System.out.println(
+                "Asignacion a atributo reconocida: " + objeto + "." + campo
+            );
+        :}
+        |
+        ID:nombre IGUAL valor_inicial:e PUNTO_COMA
+        {:
+            tabla.actualizarValor(nombre, e, nombreleft, nombreright);
+
+            System.out.println(
+                "Asignacion con expresion reconocida: " + nombre
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion SUMA PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '+' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion RESTA PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '-' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion MULTIPLICACION PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '*' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion DIVISION PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '/' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:nombre IGUAL expresion MODULO PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "expresion aritmetica incompleta despues de '%' en la asignacion de " + nombre,
+                pcleft,
+                pcright
+            );
+        :}
+        |
+        ID:variable IGUAL ID:nombre PARENTESIS_ABRE
+        argumentos_optativos PUNTO_COMA:pc
+        {:
+            errorSintactico(
+                "falta ')' en la llamada al metodo " + nombre,
+                pcleft,
+                pcright
+            );
+
+            System.out.println(
+                "Asignacion con llamada a metodo recuperada: " + variable
+            );
+        :}
+;
+
+/* ACTIVIDAD 9: cada expresion regresa su texto y su tipo de dato. */
+expresion ::=
+        llamada_metodo_expr:e
+        {: RESULT = e; :}
+        |
+        ID:id
+        {:
+            RESULT = tabla.tipoIdentificador(id, idleft, idright);
+        :}
+        |
+        ID:objeto PUNTO ID:campo
+        {:
+            /* ACTIVIDAD 10: uso de un atributo dentro de una expresion */
+            RESULT = tabla.tipoAtributo(objeto, campo, objetoleft, objetoright);
+        :}
+        |
+        NUMERO:n
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "int", true, nleft, nright); :}
+        |
+        NUMERO_DECIMAL:n
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "float64", true, nleft, nright); :}
+        |
+        CADENA:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "string", true, cleft, cright); :}
+        |
+        CARACTER:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "rune", true, cleft, cright); :}
+        |
+        TRUE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("true", "bool", true, vleft, vright); :}
+        |
+        FALSE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("false", "bool", true, vleft, vright); :}
+        |
+        PARENTESIS_ABRE:p expresion:e PARENTESIS_CIERRA
+        {:
+            RESULT = TablaSimbolos.parentesis(e, pleft, pright);
+        :}
+        |
+        NOT:n expresion:e
+        {:
+            System.out.println("Expresion logica con ! reconocida");
+            RESULT = tabla.negacion(e, nleft, nright);
+        :}
+        |
+        expresion:a SUMA expresion:b
+        {:
+            System.out.println("Expresion aritmetica con + reconocida");
+            RESULT = tabla.operacionBinaria(a, "+", b);
+        :}
+        |
+        expresion:a RESTA expresion:b
+        {:
+            System.out.println("Expresion aritmetica con - reconocida");
+            RESULT = tabla.operacionBinaria(a, "-", b);
+        :}
+        |
+        expresion:a MULTIPLICACION expresion:b
+        {:
+            System.out.println("Expresion aritmetica con * reconocida");
+            RESULT = tabla.operacionBinaria(a, "*", b);
+        :}
+        |
+        expresion:a DIVISION expresion:b
+        {:
+            System.out.println("Expresion aritmetica con / reconocida");
+            RESULT = tabla.operacionBinaria(a, "/", b);
+        :}
+        |
+        expresion:a MODULO expresion:b
+        {:
+            System.out.println("Expresion aritmetica con % reconocida");
+            RESULT = tabla.operacionBinaria(a, "%", b);
+        :}
+        |
+        expresion:a MENOR expresion:b
+        {:
+            System.out.println("Condicion relacional con < reconocida");
+            RESULT = tabla.operacionBinaria(a, "<", b);
+        :}
+        |
+        expresion:a MAYOR expresion:b
+        {:
+            System.out.println("Condicion relacional con > reconocida");
+            RESULT = tabla.operacionBinaria(a, ">", b);
+        :}
+        |
+        expresion:a MENOR_IGUAL expresion:b
+        {:
+            System.out.println("Condicion relacional con <= reconocida");
+            RESULT = tabla.operacionBinaria(a, "<=", b);
+        :}
+        |
+        expresion:a MAYOR_IGUAL expresion:b
+        {:
+            System.out.println("Condicion relacional con >= reconocida");
+            RESULT = tabla.operacionBinaria(a, ">=", b);
+        :}
+        |
+        expresion:a IGUAL_IGUAL expresion:b
+        {:
+            System.out.println("Condicion relacional con == reconocida");
+            RESULT = tabla.operacionBinaria(a, "==", b);
+        :}
+        |
+        expresion:a DIFERENTE expresion:b
+        {:
+            System.out.println("Condicion relacional con != reconocida");
+            RESULT = tabla.operacionBinaria(a, "!=", b);
+        :}
+        |
+        expresion:a AND expresion:b
+        {:
+            System.out.println("Expresion logica con && reconocida");
+            RESULT = tabla.operacionBinaria(a, "&&", b);
+        :}
+        |
+        expresion:a OR expresion:b
+        {:
+            System.out.println("Expresion logica con || reconocida");
+            RESULT = tabla.operacionBinaria(a, "||", b);
+        :}
+;
+
+
+/* =========================================================
+   TIPOS
+   ========================================================= */
+
+tipo ::=
+        INT
+        {:
+            System.out.println("Tipo reconocido: int");
+            RESULT = "int";
+        :}
+
+        |
+
+        FLOAT32
+        {:
+            System.out.println("Tipo reconocido: float32");
+            RESULT = "float32";
+        :}
+
+        |
+
+        FLOAT64
+        {:
+            System.out.println("Tipo reconocido: float64");
+            RESULT = "float64";
+        :}
+
+        |
+
+        STRING
+        {:
+            System.out.println("Tipo reconocido: string");
+            RESULT = "string";
+        :}
+
+        |
+
+        BOOL
+        {:
+            System.out.println("Tipo reconocido: bool");
+            RESULT = "bool";
+        :}
+
+        |
+
+        BYTE
+        {:
+            System.out.println("Tipo reconocido: byte");
+            RESULT = "byte";
+        :}
+
+        |
+
+        RUNE
+        {:
+            System.out.println("Tipo reconocido: rune");
+            RESULT = "rune";
+        :}
+;
+
+
+/* =========================================================
+   VALORES
+   ========================================================= */
+
+valor ::=
+        NUMERO:n
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "int", true, nleft, nright); :}
+        |
+        NUMERO_DECIMAL:n
+        {: RESULT = TablaSimbolos.nuevaExpresion(n, "float64", true, nleft, nright); :}
+        |
+        CADENA:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "string", true, cleft, cright); :}
+        |
+        CARACTER:c
+        {: RESULT = TablaSimbolos.nuevaExpresion(c, "rune", true, cleft, cright); :}
+        |
+        TRUE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("true", "bool", true, vleft, vright); :}
+        |
+        FALSE:v
+        {: RESULT = TablaSimbolos.nuevaExpresion("false", "bool", true, vleft, vright); :}
+;

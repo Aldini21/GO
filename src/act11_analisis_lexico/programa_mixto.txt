@@ -1,0 +1,27 @@
+package main;
+import "fmt";
+
+/* Actividad 11: programa mixto */
+
+type Rectangulo struct {
+    ancho int;
+    alto int;
+}
+
+func (r Rectangulo) area() int {
+    return r.ancho * r.alto;
+}
+
+func main() {
+    var figura Rectangulo = Rectangulo{};
+    figura.ancho = 3;
+
+    for i := 0; i < 3; i++ {
+        figura.alto = i;
+    }
+    fmt.Println(figura.area(), i);
+
+    if figura.area() {
+        continue;
+    }
+}
