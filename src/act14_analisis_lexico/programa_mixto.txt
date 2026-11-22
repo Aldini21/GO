@@ -1,0 +1,25 @@
+package main;
+import "fmt";
+
+/* Actividad 14: programa mixto (casos en los que NO se debe optimizar) */
+
+func main() {
+    var a int = 4;
+    var b int = 6;
+    var s int = a + b;
+    a = 10;
+    var r int = a + b;
+    var v int = 1;
+    fmt.Println(v);
+    v = 2;
+    var cont int = 0;
+
+    for cont < 3 {
+        cont = cont + 1;
+    }
+
+    if cont == 3 {
+        fmt.Println("tres");
+    }
+    fmt.Println(s, r, v, cont);
+}
