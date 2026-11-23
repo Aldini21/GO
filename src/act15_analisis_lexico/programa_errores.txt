@@ -1,0 +1,29 @@
+package main;
+import "fmt";
+
+/* Actividad 15: programa con errores (no se genera codigo ejecutable) */
+
+func doble(n int) int {
+    return n * 2;
+}
+
+func main() {
+    var x int = 5;
+    var texto string = "hola";
+
+    if x {
+        x = 1;
+    }
+    for texto {
+        x = x + 1;
+    }
+    switch x {
+        case "uno":
+            x = 2;
+    }
+    break;
+    continue;
+    x = doble(texto);
+    x = doble(1, 2);
+    fmt.Println(x);
+}

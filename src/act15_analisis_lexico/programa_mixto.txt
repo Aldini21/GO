@@ -1,0 +1,27 @@
+package main;
+import "fmt";
+
+/* Actividad 15: programa mixto (casos en los que NO se optimiza la instruccion
+   y un error que solo aparece al ejecutar) */
+
+func sumar(a int, b int) int {
+    return a + b;
+}
+
+func main() {
+    var x int = 5;
+    var y int = x + 1;
+    var z int = sumar(x, y);
+    var w int = x + z;
+    var t int = (x + y) * (x + y);
+    var cont int = 0;
+
+    for cont < 2 {
+        cont = cont + x;
+    }
+
+    fmt.Println(y, z, w, t, cont);
+    var cero int = cont - 5;
+    var division int = 100 / cero;
+    fmt.Println("esta linea ya no se imprime", division);
+}

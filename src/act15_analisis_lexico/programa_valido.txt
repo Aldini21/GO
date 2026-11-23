@@ -1,0 +1,65 @@
+package main;
+import "fmt";
+
+/* Actividad 15: programa valido (generacion de codigo ejecutable) */
+
+const LIMITE int = 3;
+
+type Contador struct {
+    valor int;
+}
+
+func (c *Contador) incrementar() {
+    c.valor = c.valor + 1;
+}
+
+func factorial(n int) int {
+    if n <= 1 {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+func doble(x int) int {
+    return x * 2;
+}
+
+func main() {
+    var a int = 4;
+    var b int = 6;
+    var c int = 3;
+    var result int = (a + b) * c;
+    var suma int = a + b + c;
+    var mensaje string = "Generacion de codigo ejecutable";
+    var promedio float64 = 7.5;
+    var f int = factorial(5);
+    var d int = doble(suma);
+    var cont Contador = Contador{};
+    var i int = 0;
+
+    for i < LIMITE {
+        cont.incrementar();
+        i = i + 1;
+        if i == 2 {
+            continue;
+        }
+    }
+
+    var cociente int = 0;
+    if b != 0 {
+        cociente = suma / b;
+    }
+
+    var paridad string = "impar";
+    var residuo int = f % 2;
+    switch residuo {
+        case 0:
+            paridad = "par";
+        default:
+            paridad = "impar";
+    }
+
+    fmt.Println(mensaje);
+    fmt.Println(result, suma, f, d, cont.valor, cociente, paridad, promedio * 2.0);
+    fmt.Println("Hola mundo");
+}
